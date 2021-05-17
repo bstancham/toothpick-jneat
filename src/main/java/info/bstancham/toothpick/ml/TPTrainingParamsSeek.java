@@ -10,6 +10,10 @@ import java.util.List;
 import jneat.neat.Organism;
 
 /**
+Add (self) velocity to inputs...
+
+
+
  * <p>Controller has 2 inputs and 4 outputs:</p>
  *
  * <p>INPUTS:</p>
@@ -30,8 +34,12 @@ public class TPTrainingParamsSeek extends ToothpickTrainingParams {
 
     public boolean mobileEnemy = false;
 
+    private double inputScalingDistance = 0.1;
+    private double inputScalingInertia = 10;
+
     public TPTrainingParamsSeek(String label) {
-        super(label, "genome_toothpick_2_4");
+        // super(label, "genome_toothpick_2_4");
+        super(label, "genome_toothpick_4_4");
     }
 
     @Override
@@ -39,7 +47,7 @@ public class TPTrainingParamsSeek extends ToothpickTrainingParams {
         TPProgram prog = MLUtil.makeProgHorizVsVertNoCollision();
         // set drone-actor to new random position at beginning of each generation
         PBRandActorSetup randDroneSetup = new PBRandActorSetup();
-        randDroneSetup.setTarget(MLUtil.VERT_NAME);
+        randDroneSetup.setTarget(MLUtil.HORIZ_NAME, MLUtil.VERT_NAME);
         randDroneSetup.initBoundsRightHandSide(prog.getGeometry());
         if (mobileEnemy)
             // randDroneSetup.initInertia(-1, 1);
@@ -72,7 +80,8 @@ public class TPTrainingParamsSeek extends ToothpickTrainingParams {
                 TPActor target = MLUtil.getVertActor(prog);
                 if (self == null || self == null)
                     return 0;
-                return target.x - self.x;
+                double dist = target.x - self.x;
+                return dist * inputScalingDistance;
             });
 
         // (target) relative position, y
@@ -81,7 +90,22 @@ public class TPTrainingParamsSeek extends ToothpickTrainingParams {
                 TPActor target = MLUtil.getVertActor(prog);
                 if (self == null || self == null)
                     return 0;
-                return target.y - self.y;
+                double dist = target.y - self.y;
+                return dist * inputScalingDistance;
+            });
+
+        // (self) inertia, x
+        nnc.addInput((TPProgram prog) -> {
+                TPActor self = MLUtil.getHorizActor(prog);
+                if (self == null) return 0;
+                return self.xInertia * inputScalingInertia;
+            });
+
+        // (self) inertia, y
+        nnc.addInput((TPProgram prog) -> {
+                TPActor self = MLUtil.getHorizActor(prog);
+                if (self == null) return 0;
+                return self.yInertia * inputScalingInertia;
             });
     }
 
