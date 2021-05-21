@@ -1,6 +1,7 @@
 package jneat.common;
 
 import info.bstancham.toothpick.ml.ToothpickTrainingParams;
+import info.bstancham.toothpick.ml.ToothpickTrainingRunner;
 
 /**
  * Environment constants?
@@ -51,7 +52,6 @@ public class EnvConstant {
      * UiConstant constructor comment.
      */
     public EnvConstant() { super(); }
-
     
     public static int TYPE_OF_SIMULATION = 0;
     public static int SIMULATION_FROM_FILE = 1;
@@ -59,6 +59,7 @@ public class EnvConstant {
     public static int SIMULATION_FROM_TOOTHPICK = 3;
     /** Used in conjunction with SIMULATION_FROM_TOOTHPICK. */
     public static ToothpickTrainingParams TOOTHPICK_TRAINING_PARAMS = null;
+    public static ToothpickTrainingRunner TOOTHPICK_TRAINING_RUNNER = null;
 
     // public static String NAME_CURR_POPULATION = "xxx";
 

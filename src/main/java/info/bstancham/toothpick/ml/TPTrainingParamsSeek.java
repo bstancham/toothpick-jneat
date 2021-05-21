@@ -1,8 +1,8 @@
 package info.bstancham.toothpick.ml;
 
-// import info.bschambers.toothpick.actor.TPFactory;
-import info.bschambers.toothpick.TPProgram;
 import info.bschambers.toothpick.PBRandActorSetup;
+import info.bschambers.toothpick.TPBase;
+import info.bschambers.toothpick.TPProgram;
 import info.bschambers.toothpick.actor.*;
 import java.awt.Color;
 import java.util.ArrayList;
@@ -10,16 +10,14 @@ import java.util.List;
 import jneat.neat.Organism;
 
 /**
-Add (self) velocity to inputs...
-
-
-
- * <p>Controller has 2 inputs and 4 outputs:</p>
+ * <p>Controller has 4 inputs and 4 outputs:</p>
  *
  * <p>INPUTS:</p>
  * <ul>
  * <li>(target) relative position, x</li>
  * <li>(target) relative position, y</li>
+ * <li>(self) velocity, x</li>
+ * <li>(self) velocity, y</li>
  * </ul>
  *
  * <p>OUTPUTS:</p>
@@ -32,26 +30,22 @@ Add (self) velocity to inputs...
  */
 public class TPTrainingParamsSeek extends ToothpickTrainingParams {
 
-    public boolean mobileEnemy = false;
-
     private double inputScalingDistance = 0.1;
     private double inputScalingInertia = 10;
 
-    public TPTrainingParamsSeek(String label) {
-        // super(label, "genome_toothpick_2_4");
-        super(label, "genome_toothpick_4_4");
+    public TPTrainingParamsSeek(TPBase base) {
+        super(base, "Seek", "genome_toothpick_4_4");
     }
 
     @Override
-    protected TPProgram makeProgram() {
+    protected TPProgram makeMasterProgram() {
         TPProgram prog = MLUtil.makeProgHorizVsVertNoCollision();
         // set drone-actor to new random position at beginning of each generation
         PBRandActorSetup randDroneSetup = new PBRandActorSetup();
         randDroneSetup.setTarget(MLUtil.HORIZ_NAME, MLUtil.VERT_NAME);
         randDroneSetup.initBoundsRightHandSide(prog.getGeometry());
-        if (mobileEnemy)
-            // randDroneSetup.initInertia(-1, 1);
-            randDroneSetup.initInertia(0, 1);
+        if (targetIsMobile())
+            randDroneSetup.initInertia(-1, 1);
         prog.addResetBehaviour(randDroneSetup);
         prog.setResetSnapshot();
         return prog;
@@ -78,7 +72,7 @@ public class TPTrainingParamsSeek extends ToothpickTrainingParams {
         nnc.addInput((TPProgram prog) -> {
                 TPActor self = MLUtil.getHorizActor(prog);
                 TPActor target = MLUtil.getVertActor(prog);
-                if (self == null || self == null)
+                if (self == null || target == null)
                     return 0;
                 double dist = target.x - self.x;
                 return dist * inputScalingDistance;
@@ -88,7 +82,7 @@ public class TPTrainingParamsSeek extends ToothpickTrainingParams {
         nnc.addInput((TPProgram prog) -> {
                 TPActor self = MLUtil.getHorizActor(prog);
                 TPActor target = MLUtil.getVertActor(prog);
-                if (self == null || self == null)
+                if (self == null || target == null)
                     return 0;
                 double dist = target.y - self.y;
                 return dist * inputScalingDistance;

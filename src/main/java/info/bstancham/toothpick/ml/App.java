@@ -2,19 +2,23 @@ package info.bstancham.toothpick.ml;
 
 import info.bschambers.toothpick.*;
 import info.bschambers.toothpick.actor.*;
+import info.bschambers.toothpick.geom.Pt;
 import info.bschambers.toothpick.ui.*;
 import info.bschambers.toothpick.ui.swing.TPSwingUI;
 import java.awt.Color;
 import java.io.File;
 import java.util.List;
+import jneat.common.EnvConstant;
 import jneat.gui.MainGui;
 import jneat.misc.*;
+import static info.bstancham.toothpick.ml.TPTrainingPlatform.Mode;
 
 public class App {
 
     private TPBase base;
-    private ToothpickTrainingParams currentToothpickParams = null;
-    private int numEpoch = 5;
+    private MainGui neatGui = null;
+
+    private TPTrainingPlatform currentTrainingPlatform = null;
 
     public App() {
         TPSwingUI ui = new TPSwingUI("ToothpickML");
@@ -22,17 +26,14 @@ public class App {
         base.setUI(ui);
         ui.setVisible(true);
 
-        // base.setProgram(testProg);
         base.setProgram(makeProgNumDrones(5));
 
-        // base.setMenu(makeMenu());
         TPMenu menu = TPSwingUI.makeDefaultMenu(ui);
         menu.add(makeMenuPresetPrograms());
         menu.add(makeMenuSimultaneousPlatform());
         menu.add(makeMenuNeuralNetworkActor());
         menu.add(makeMenuLogicTrainingPrograms());
         menu.add(makeMenuToothpickTrainingPrograms());
-        menu.add(makeMenuCurrentToothpickParams());
         base.setMenu(menu);
     }
 
@@ -255,136 +256,158 @@ public class App {
 
     private TPMenu makeMenuToothpickTrainingPrograms() {
         TPMenu m = new TPMenu("jneat training: TOOTHPICK");
-        m.add(new TPMenuItemIncr("num epochs: ", () -> "" + numEpoch,
-                                 () -> incrNumEpoch(-1),
-                                 () -> incrNumEpoch(1)));
-        m.add(new TPMenuItemSimple("train point at stationary", () -> trainPointAtStationary()));
-        m.add(new TPMenuItemSimple("train point at mobile", () -> trainPointAtMobile()));
-        m.add(new TPMenuItemSimple("train seek stationary", () -> trainSeekStationary()));
-        m.add(new TPMenuItemSimple("train seek mobile", () -> trainSeekMobile()));
-        m.add(new TPMenuItemSimple("train keep moving/avoid edges", () -> trainKeepMovingAvoidEdges()));
+        m.add(new TPMenuItemSimple("Test platform (no training)", () -> System.out.println("... todo...")));
+        m.add(makeMenuTPTraining(new TPTrainingParamsPointAt(base)));
+        m.add(makeMenuTPTraining(new TPTrainingParamsSeek(base)));
+        m.add(makeMenuTPTraining(new TPTrainingParamsAvoidEdges(base)));
         return m;
     }
 
-    private void incrNumEpoch(int amt) {
-        numEpoch += amt;
-        if (numEpoch < 1)
-            numEpoch = 1;
-    }
-
-    private void trainPointAtStationary() {
-        TPTrainingParamsPointAt params = new TPTrainingParamsPointAt("Point at Stationary");
-        params.mobileEnemy = false;
-        trainToothpicks(params);
-    }
-
-    private void trainPointAtMobile() {
-        TPTrainingParamsPointAt params = new TPTrainingParamsPointAt("Point at Mobile");
-        params.mobileEnemy = true;
-        trainToothpicks(params);
-    }
-
-    private void trainSeekStationary() {
-        TPTrainingParamsSeek params = new TPTrainingParamsSeek("Seek Stationary");
-        params.mobileEnemy = false;
-        trainToothpicks(params);
-    }
-
-    private void trainSeekMobile() {
-        TPTrainingParamsSeek params = new TPTrainingParamsSeek("Seek Mobile");
-        params.mobileEnemy = true;
-        trainToothpicks(params);
-    }
-
-    private void trainKeepMovingAvoidEdges() {
-        TPTrainingParamsAvoidEdges params = new TPTrainingParamsAvoidEdges("Avoid Edges");
-        trainToothpicks(params);
-    }
-
-    private void trainToothpicks(ToothpickTrainingParams ttParams) {
-        MainGui gui = MainGui.launchGui();
-
-        currentToothpickParams = ttParams;
-
-        gui.sendToLogger("App: toothpick-training object - " + ttParams.label);
-        gui.setToothpickTrainingParams(ttParams);
-
-        gui.loadJneatParameters(getResourcePath("toothpick-neat-params"));
-        gui.writeJneatParameters();
-
-        String sessionParams = ""
-            + "; Toothpick Game: " + ttParams.label + "\n"
-            + "data_from_toothpick          Y\n"
-            + "start_from_genome            Y\n"
-            + "genome_file                  " + ttParams.getGenomeFilename() + "\n"
-            + "population_file              primitive\n"
-            + "epoch                        " + numEpoch + "\n"
-            + "activation                   0\n"
-            + "prefix_generation_file       generation\n"
-            + "prefix_winner                winner\n";
-
-        // NOTE: no need to compile classes because we're using extant classes
-        gui.showAndWriteSessionParameters(sessionParams);
-
-        // bring the "start simulation" panel to the front and select "graph champion"
-        // from the radio buttons
-        gui.showGenerationPanel();
-        gui.selectOptionGraphChampion();
-        gui.sendToLogger("App: Ready to run " + ttParams.label + "... just press START");
-    }
-
-    private TPMenu makeMenuCurrentToothpickParams() {
-        TPMenu m = new TPMenu(() -> "CURRENT TOOTHPICK PARAMS (" + safeGetLabel(currentToothpickParams) + ")");
-        m.add(makeProgMenu("play against current champion", makeProgAgainstChamp()));
+    private TPMenu makeMenuTPTraining(ToothpickTrainingParams ttParams) {
+        ToothpickTrainingRunner runner = new ToothpickTrainingRunner(ttParams);
+        TPMenu m = new TPMenu("train " + ttParams.label);
+        // m.add(new TPMenuItemSimple("START TRAINING", () -> trainToothpicks(runner)));
+        // m.add(new TPMenuItemSimple("START TRAINING (NEW VERSION)",
+        //                            () -> trainToothpicksNEW(new TPTrainingRunner(runner.getParams()))));
+        // m.add(new TPMenuItemSimple("START TRAINING (NEW SIMULTANEOUS PLATFORM VERSION)",
+        //                            () -> trainToothpicksSP(ttParams)));
+        m.add(makeTrainingPlatformMenu(makeTrainingPlatform(ttParams)));
+        m.add(new TPMenuItemIncr("num epochs: ", () -> "" + ttParams.numEpoch,
+                                 () -> incrNumEpoch(ttParams, -1),
+                                 () -> incrNumEpoch(ttParams, 1)));
+        m.add(new TPMenuItemIncr("population size: ", () -> "" + ttParams.populationSize,
+                                 () -> incrPopulationSize(ttParams, -1),
+                                 () -> incrPopulationSize(ttParams, 1)));
+        m.add(new TPMenuItemBool("mobile target: ",
+                                 ttParams::targetIsMobile,
+                                 ttParams::setTargetIsMobile));
+        m.add(new TPMenuItemIncr("iterations per generation: ",
+                                 () -> "" + ttParams.iterationsPerGeneration,
+                                 () -> incrIterations(ttParams, -100),
+                                 () -> incrIterations(ttParams, 100)));
         return m;
     }
 
-    private TPProgram makeProgAgainstChamp() {
-        TPProgram prog = MLUtil.makeProgHorizVsVert();
-        prog.addBehaviour(champMatchResetBehaviour());
+    private TPMenu makeTrainingPlatformMenu(TPTrainingPlatform platform) {
+        TPMenu m = new TPMenu("TRAINING PLATFORM (" + platform.getTitle() + ")");
+        m.setInitAction(() -> {
+                System.out.println("trianing-platform-menu --> init-action");
+                if (neatGui == null)
+                    neatGui = MainGui.launchGui();
+
+                neatGui.setToothpickTrainingParams(platform.getParams());
+                // EnvConstant.TOOTHPICK_TRAINING_PARAMS = platform.getParams();
+
+                // write jneat params & session params
+                neatGui.loadJneatParameters(getResourcePath("toothpick-neat-params"));
+                neatGui.writeJneatParameters();
+                neatGui.showAndWriteSessionParameters(platform.getParams().makeSessionParams());
+
+                // bring the "start simulation" panel to the front and select "graph champion"
+                // from the radio buttons
+                neatGui.showGenerationPanel();
+                neatGui.selectOptionGraphChampion();
+
+                // doing this before initTraining seems to sometimes create some exceptions relating to the GUI...
+                // ... init params before initTraining, so that mobile-target will take effect in first iteration
+                // ... otherwise, mobile target won't take effect till initGeneration is called in second gen
+                platform.getParams().init();
+
+                platform.initTraining(neatGui);
+                base.setPlatform(platform);
+
+                // used in creating champ-match
+                currentTrainingPlatform = platform;
+            });
+        // m.add(new TPMenuItemSimple(() -> "RUN (" + platform.getParams().numEpoch + " generations)",
+        //                            () -> base.hideMenu()));
+        // m.add(new TPMenuItemSimple(this::runButtonText, this::runButtonAction));
+        m.add(new TPMenuItemSimple(() -> runButtonText(platform), () -> runButtonAction(platform)));
+        m.add(new TPMenuItemBool("smear-mode: ",
+                                 platform::isSmearMode,
+                                 platform::setSmearMode));
+        m.add(new TPMenuItemSimple("re-run current generation", () -> platform.resetGeneration()));
+        m.add(makeProgMenu("play against current champion", makeProgChampMatch(platform)));
+        return m;
+    }
+
+    private String runButtonText(TPTrainingPlatform platform) {
+        if (platform.getMode() == Mode.READY_TO_TRAIN)
+            return "START TRAINING (" + platform.getParams().numEpoch + " generations of "
+                + platform.getParams().iterationsPerGeneration + " iterations)";
+        else if (platform.getMode() == Mode.TRAINING)
+            return "CONTINUE TRAINING (gen " + platform.getCurrentGeneration() + " of " + platform.getParams().numEpoch + " | iter "
+                + platform.getCurrentIteration() + " of " + platform.getParams().iterationsPerGeneration + ")";
+        else if (platform.getMode() == Mode.TRAINING_ENDED)
+            return "CONTINUE RUNNING (training ended after "
+                + platform.getParams().numEpoch + " generations of "
+                + platform.getParams().iterationsPerGeneration + " iterations)";
+        else if (platform.getMode() == Mode.RE_RUN)
+            return "START RE-RUN";
+        else
+            return "ERROR - TPTrainingPlatform - Mode not recognised!";
+    }
+
+    private void runButtonAction(TPTrainingPlatform platform) {
+        if (platform.getMode() == TPTrainingPlatform.Mode.READY_TO_TRAIN) {
+            base.hideMenu();
+        } else if (platform.getMode() == TPTrainingPlatform.Mode.TRAINING) {
+            base.hideMenu();
+        } else if (platform.getMode() == TPTrainingPlatform.Mode.RE_RUN) {
+            System.out.println("ERROR! start-re-run not yet implemented!");
+        } else {
+            System.out.println("ERROR - TPTrainingPlatform - Mode not recognised! (ACTION)");
+        }
+    }
+
+    private TPTrainingPlatform makeTrainingPlatform(ToothpickTrainingParams ttParams) {
+        return new TPTrainingPlatform(ttParams, base);
+    }
+
+    private TPProgram makeProgChampMatch(TPTrainingPlatform platform) {
+        TPProgram prog = new TPProgram("play against current champion");
+        prog.addResetBehaviour(new PBMisc(this::setupChampMatch));
+        prog.init();
         prog.setResetSnapshot();
         return prog;
     }
 
-    private ProgramBehaviour champMatchResetBehaviour() {
+    private void setupChampMatch(TPProgram prog) {
+        TPTrainingPlatform platform = currentTrainingPlatform;
+        if (platform == null) {
+            System.out.println("setupChampMatch() --> currentTrainingPlatform = NULL!");
+        } else {
+            // champion
+            TPOrganism champ = platform.getFittestTPOrganism();
+            System.out.println("CREATING CHAMP-MATCH AGAINST: " + champ);
+            if (champ != null) {
+                // champ.setDebugMode(true);
+                prog.addActor(champ.getActor());
+            }
+            // player
+            TPPlayer player = TPFactory.playerLine(new Pt(300, 300));
+            player.getArchetype().name = MLUtil.VERT_NAME;
+            player.reset();
+            prog.setPlayer(player);
+        }
+    }
 
-        final App app = this;
+    private void incrNumEpoch(ToothpickTrainingParams params, int amt) {
+        params.numEpoch += amt;
+        if (params.numEpoch < 1)
+            params.numEpoch = 1;
+    }
 
-        ProgramBehaviour pb = new ProgramBehaviour() {
-                @Override
-                public void update(TPProgram prog) {
+    private void incrPopulationSize(ToothpickTrainingParams params, int amt) {
+        params.populationSize += amt;
+        if (params.populationSize < 1)
+            params.populationSize = 1;
+    }
 
-                    ToothpickTrainingParams params = app.currentToothpickParams;
-                    if (params == null) {
-                        System.out.println("currentToothpickParams = null");
-                    } else {
-                        if (params.getTheBestOne() == null) {
-                            System.out.println("params.getTheBestOne() == null");
-                        } else {
-
-                            TPOrganism bestOrganism = params.getTheBestOne();
-                            TPActor bestActor = bestOrganism.getActor();
-                            System.out.println("the best actor is " + bestActor);
-
-                            NeuralNetworkController nnc = bestOrganism.controller;
-                            TPActor horiz = MLUtil.getHorizActor(prog);
-                            horiz.addBehaviour(nnc);
-
-                            TPPlayer player = TPFactory.player(MLUtil.getVertActor(prog));
-                            prog.setPlayer(player);
-                            prog.revivePlayer(true);
-
-                        }
-                    }
-                }
-
-                @Override
-                public ProgramBehaviour copy() {
-                    return this;
-                }
-            };
-
-        return pb;
+    private void incrIterations(ToothpickTrainingParams params, int amt) {
+        params.iterationsPerGeneration += amt;
+        if (params.iterationsPerGeneration < 100)
+            params.iterationsPerGeneration = 100;
     }
 
     private String safeGetLabel(ToothpickTrainingParams params) {
@@ -392,7 +415,7 @@ public class App {
             return "NULL";
         return params.label;
     }
-        
+
     private String getResourcePath(String resourceName) {
         String resourcesPath = "resources/main";
         return new File(resourcesPath + "/" + resourceName).getAbsolutePath();

@@ -19,7 +19,7 @@ import jneat.common.*;
 import jneat.graph.*;
 import jneat.log.*;
 import jneat.neat.*;
-    
+
 public class Generation extends JPanel implements ActionListener, ItemListener {
 
     private JFrame f1;
@@ -81,6 +81,20 @@ public class Generation extends JPanel implements ActionListener, ItemListener {
     Object ObjClass_tgt;
     Method Method_tgt;
     Object ObjRet_tgt;
+
+
+    // MISC
+
+    private Genome u_genome = null;
+    private int expcount = 0; // the number of experiments
+    private double  u_prb_link = 0.5;
+    private boolean u_recurrent = false;
+    private int u_max_unit = 0;
+    private int u_inp_unit = 0;
+    private int u_out_unit = 0;
+    private ToothpickTrainingRunner runner = null;
+    private ToothpickTrainingParams ttParams = null;
+
 
     private volatile Thread lookupThread;
 
@@ -262,6 +276,22 @@ public class Generation extends JPanel implements ActionListener, ItemListener {
         initAllMap();
     }
 
+    public JTextPane getTextPane2() { return textPane2; }
+
+    public JPanel getP3() { return p3; }
+
+    public ButtonGroup getCkGroup() { return ck_group; }
+
+    public Vector getV1Fitness() {return v1_fitness; }
+    public Vector getV1FitnessWin() {return v1_fitness_win; }
+    public Vector getV1Species() {return v1_species; }
+
+    public void setV1Fitness(Vector v) { v1_fitness = v; }
+    public void setV1FitnessWin(Vector v) { v1_fitness_win = v; }
+    public void setV1Species(Vector v) { v1_species = v; }
+
+    public String[] getMyStyles() { return My_styles; }
+    
     private static void msg(String str) {
         // System.out.println(str);
     }
@@ -342,21 +372,27 @@ public class Generation extends JPanel implements ActionListener, ItemListener {
      * Sends a bunch of info to the logger, then calls startNeat
      */
     public void startProcess() {
+        logInfoBeforeStart();
+        startNeat();
+        logInfoAfterEnd();
+    }
+    
+    public void logInfoBeforeStart() {
         logger.sendToLog(" generation.startProcess() --- START");
         try {
-            
+
             logger.sendToLog(" generation:   for this experiment has :");
             if (EnvConstant.TYPE_OF_SIMULATION == EnvConstant.SIMULATION_FROM_TOOTHPICK) {
-                
+
                 logger.sendToLog(" generation:      data coming from TOOTHPICK SYSTEM");
-                
+
             } else {
-                
+
                 if (EnvConstant.TYPE_OF_SIMULATION == EnvConstant.SIMULATION_FROM_CLASS)
                     logger.sendToLog(" generation:      data coming from class");
                 if (EnvConstant.TYPE_OF_SIMULATION == EnvConstant.SIMULATION_FROM_FILE)
                     logger.sendToLog(" generation:      data coming from file");
-        
+
                 logger.sendToLog(" generation:      data input  is  " + EnvConstant.DATA_INP);
                 logger.sendToLog(" generation:      data output is  " + EnvConstant.DATA_OUT);
                 logger.sendToLog(" generation:      fitness class   " + EnvConstant.CLASS_FITNESS);
@@ -370,6 +406,7 @@ public class Generation extends JPanel implements ActionListener, ItemListener {
 
             if ((EnvConstant.TYPE_OF_START  == EnvConstant.START_FROM_NEW_RANDOM_POPULATION) &&  (!EnvConstant.FORCE_RESTART )) {
                 logger.sendToLog(" generation:      start from rnd population : " + EnvConstant.NAME_CURR_POPULATION);
+
                 logger.sendToLog(" generation:                       max unit : " + EnvConstant.NR_UNIT_MAX);
                 logger.sendToLog(" generation:                      recursion : " + EnvConstant.RECURSION);
                 logger.sendToLog(" generation:                    % Prob link : " + EnvConstant.PROBABILITY_OF_CONNECTION);
@@ -390,18 +427,23 @@ public class Generation extends JPanel implements ActionListener, ItemListener {
                 logger.sendToLog(" generation:      number of activaction A(t) = f(depth(net)) (automatic)");
             if (EnvConstant.ACTIVATION_PERIOD == EnvConstant.MANUAL)
                 logger.sendToLog(" generation:      number of activaction A(t) = "+EnvConstant.ACTIVATION_TIMES+" (manual)");
+        } catch (Throwable e) {
+            logger.sendToLog(" generation: error during generation.startProcess() :" + e);
+        }
+    }
+            
+            // startNeat();
 
-            startNeat();
-
+    public void logInfoAfterEnd() {
+        try {
             if (EnvConstant.TYPE_OF_SIMULATION == EnvConstant.SIMULATION_FROM_TOOTHPICK) {
-                ToothpickTrainingParams ttParams = EnvConstant.TOOTHPICK_TRAINING_PARAMS;
-                System.out.println("FITTEST TOOTHPICK: " + ttParams.getTheBestOne());
-            }            
-
+                ToothpickTrainingRunner runner = EnvConstant.TOOTHPICK_TRAINING_RUNNER;
+                ToothpickTrainingParams ttParams = runner.getParams();
+                System.out.println("FITTEST TOOTHPICK: " + runner.getFittestTPOrganism());
+            }
         } catch (Throwable e1) {
             logger.sendToLog(" generation: error during generation.startProcess() :"+e1);
         }
-
         msg("Generation.startProcess() --- END");
     }
 
@@ -473,6 +515,12 @@ public class Generation extends JPanel implements ActionListener, ItemListener {
      * Runs epoch set number of times (as specified in session file)
      */
     public boolean startNeat() {
+        EpochParams ep = startNeat_START();
+        ep = startNeat_MIDDLE(ep);
+        return startNeat_END(ep);
+    }
+
+    public EpochParams startNeat_START() {
         msg("Generation.startNeat() --- START");
         boolean rc = false;
         String curr_name_pop_specie = null;
@@ -481,21 +529,22 @@ public class Generation extends JPanel implements ActionListener, ItemListener {
         DecimalFormat fmt5 = new DecimalFormat(mask5);
 
         Population u_pop = null;
-        Genome u_genome = null;
+        // Genome u_genome = null;
         StringTokenizer st;
         String curword;
         String xline;
         String fnamebuf;
         IOseq xFile;
         int id;
-        int expcount = 0;
-        double  u_prb_link = 0.5;
-        boolean u_recurrent = false;
-        int u_max_unit = 0;
-        int u_inp_unit = 0;
-        int u_out_unit = 0;
+        // double  u_prb_link = 0.5;
+        // boolean u_recurrent = false;
+        // int u_max_unit = 0;
+        // int u_inp_unit = 0;
+        // int u_out_unit = 0;
         int gen = 0;
         String xnome = null;
+
+        Neat u_neat = new Neat();
 
         //// DYNAMICALLY SET UP FITNESS CLASS
 
@@ -503,13 +552,13 @@ public class Generation extends JPanel implements ActionListener, ItemListener {
 
             if (EnvConstant.TYPE_OF_SIMULATION == EnvConstant.SIMULATION_FROM_TOOTHPICK) {
 
-                //// don't bother with dynamic classes
+                // //// don't bother with dynamic classes
 
-                // hardcoding the number of inputs and outputs for neural network
-                // ... TODO: FIX THIS LATER
-                EnvConstant.NR_UNIT_INPUT = 4;
-                EnvConstant.NR_UNIT_OUTPUT = 4;
-                
+                // // hardcoding the number of inputs and outputs for neural network
+                // // ... TODO: FIX THIS LATER
+                // EnvConstant.NR_UNIT_INPUT = 4;
+                // EnvConstant.NR_UNIT_OUTPUT = 4;
+
             } else {
 
                 Class_fit = Class.forName(EnvConstant.CLASS_FITNESS);
@@ -600,19 +649,21 @@ public class Generation extends JPanel implements ActionListener, ItemListener {
         }
 
         //// PREPARE TO RUN EPOCH
-        
+
         try {
             logger.sendToLog(" generation:      read parameter file of neat ...");
 
-            Neat u_neat = new Neat();
+            // Neat u_neat = new Neat();
             // sets all variables to default values
             u_neat.initbase();
             // gets jneat parameters file path
             rc = u_neat.readParam(EnvRoutine.getJneatParameter());
 
             if (!rc) {
-                logger.sendToLog(" generation: error in read " + EnvRoutine.getJneatParameter());
-                return false;
+                String msg = " generation: error in read " + EnvRoutine.getJneatParameter();
+                logger.sendToLog(msg);
+                // return false;
+                throw new RuntimeException(msg);
             }
 
             logger.sendToLog(" generation:   ok! " + EnvRoutine.getJneatParameter());
@@ -621,16 +672,21 @@ public class Generation extends JPanel implements ActionListener, ItemListener {
             // gestisce start da genoma unico
             //
 
+            System.out.println("TYPE_OF_START=" + EnvConstant.TYPE_OF_START + ", FORCE_RESTART=" + EnvConstant.FORCE_RESTART);
+
             if ((EnvConstant.TYPE_OF_START == EnvConstant.START_FROM_GENOME) && (!EnvConstant.FORCE_RESTART)) {
 
                 xFile = new IOseq(EnvRoutine.getJneatFileData(EnvConstant.NAME_GENOMEA));
                 rc = xFile.IOseqOpenR();
                 if (!rc) {
-                    logger.sendToLog(" generation:   error open " + EnvRoutine.getJneatFileData(EnvConstant.NAME_GENOMEA));
-                    return false;
+                    String msg = " generation:   error open " + EnvRoutine.getJneatFileData(EnvConstant.NAME_GENOMEA);
+                    logger.sendToLog(msg);
+                    throw new RuntimeException(msg);
+                    // return false;
                 }
 
                 logger.sendToLog(" generation:      open file genome " + EnvRoutine.getJneatFileData(EnvConstant.NAME_GENOMEA) + "...");
+                System.out.println(" generation:      open file genome " + EnvRoutine.getJneatFileData(EnvConstant.NAME_GENOMEA) + "...");
                 xline = xFile.IOseqRead();
                 st = new StringTokenizer(xline);
                 //skip
@@ -639,13 +695,14 @@ public class Generation extends JPanel implements ActionListener, ItemListener {
                 curword = st.nextToken();
                 id = Integer.parseInt(curword);
                 logger.sendToLog(" generation:  ok! created genome id -> " + id);
+                System.out.println(" generation:  ok! created genome id -> " + id);
                 u_genome = new Genome(id, xFile);
             }
 
             //
             // gestisce start da popolazione random
             //
-            
+
             if (EnvConstant.TYPE_OF_START == EnvConstant.START_FROM_NEW_RANDOM_POPULATION && (!EnvConstant.FORCE_RESTART)) {
                 logger.sendToLog(" generation:      cold start from random population.. ");
                 u_prb_link = EnvConstant.PROBABILITY_OF_CONNECTION;
@@ -658,7 +715,7 @@ public class Generation extends JPanel implements ActionListener, ItemListener {
             //
             // gestisce start da popolazione esistente
             //
-            
+
             if ((EnvConstant.TYPE_OF_START == EnvConstant.START_FROM_OLD_POPULATION) || (EnvConstant.FORCE_RESTART)) {
                 logger.sendToLog(" generation:      warm start from old population -> "+EnvRoutine.getJneatFileData(EnvConstant.NAME_CURR_POPULATION));
             }
@@ -666,7 +723,7 @@ public class Generation extends JPanel implements ActionListener, ItemListener {
 
 
             ///// READY TO RUN EPOCH!
-            
+
 
 
             // EnvConstant.SERIAL_WINNER = 0;
@@ -677,55 +734,71 @@ public class Generation extends JPanel implements ActionListener, ItemListener {
             EnvConstant.CURR_ORGANISM_CHAMPION = null;
             EnvConstant.FIRST_ORGANISM_WINNER = null;
 
-            ToothpickTrainingRunner runner = null;
+            
             if (EnvConstant.TYPE_OF_SIMULATION == EnvConstant.SIMULATION_FROM_TOOTHPICK) {
 
-                TPGeometry geom = new TPGeometry();
-                geom.setupAndCenter(1000, 800);
+                runner = EnvConstant.TOOTHPICK_TRAINING_RUNNER;
+                ttParams = EnvConstant.TOOTHPICK_TRAINING_PARAMS;
+            
+                if (runner != null) {
+                    logger.sendToLog(" generation: ToothpickTrainingRunner --> " + runner);
+                    u_neat.p_pop_size = runner.getParams().populationSize;
+                    runner.show();
 
-                ToothpickTrainingParams ttParams = EnvConstant.TOOTHPICK_TRAINING_PARAMS;
-                logger.sendToLog(" generation: ToothpickTrainingParams object --> " + ttParams);
+                } else if (ttParams != null) {
+                    logger.sendToLog(" generation: ToothpickTrainingParams --> " + ttParams);
+                    u_neat.p_pop_size = ttParams.populationSize;
 
-                // groupEvaluator = new TPGroupEvaluator(geom);
-                // groupEvaluator = new TPGroupEvaluator(geom, tt);
-                runner = new ToothpickTrainingRunner(geom, ttParams);
-
+                } else {
+                    System.out.println("RUNNER and PARAMS are both NULL!");
+                }
+                
+                logger.sendToLog(" generation: override population-size from params --> "
+                                 + u_neat.p_pop_size);
+                
             }
 
+
+        } catch (Throwable e) {
+            logger.sendToLog(" error in generation.startNeat_START() " + e);
+            e.printStackTrace();
+        }
+
+        return new EpochParams(u_neat, u_pop, gen, curr_name_pop_specie);
+    }
+
+    public EpochParams startNeat_MIDDLE(EpochParams ep) {
+
+        try {
             EnvConstant.RUNNING = true;
 
-            for (expcount = 0; expcount < u_neat.p_num_runs; expcount++) {
+            // for (expcount = 0; expcount < u_neat.p_num_runs; expcount++) {
+            for (expcount = 0; expcount < ep.neat.p_num_runs; expcount++) {
 
-                logger.sendToLog(" generation:      spawning population ...");
-
-                if ((EnvConstant.TYPE_OF_START  == EnvConstant.START_FROM_GENOME) &&  (!EnvConstant.FORCE_RESTART))
-                    u_pop = new Population(u_genome, u_neat.p_pop_size);
-
-                if ((EnvConstant.TYPE_OF_START  == EnvConstant.START_FROM_NEW_RANDOM_POPULATION) && (!EnvConstant.FORCE_RESTART ))
-                    u_pop = new Population(u_neat.p_pop_size, (u_inp_unit+1), u_out_unit, u_max_unit, u_recurrent, u_prb_link);
-
-                if ((EnvConstant.TYPE_OF_START == EnvConstant.START_FROM_OLD_POPULATION) || (EnvConstant.FORCE_RESTART))
-                    u_pop = new Population(EnvRoutine.getJneatFileData(EnvConstant.NAME_CURR_POPULATION));
-
-                logger.sendToLog(" generation:      verifying spawned population....");
-                u_pop.verify();
-
+                spawnPopulation(ep);
+                
                 //// start ............
-
-                for (gen = 1; gen <= EnvConstant.NUMBER_OF_EPOCH; gen++) {
+               
+                for (ep.gen = 1; ep.gen <= EnvConstant.NUMBER_OF_EPOCH; ep.gen++) {
                     // curr_name_pop_specie =  EnvConstant.PREFIX_SPECIES_FILE + fmt5.format(gen);
-                    curr_name_pop_specie =  EnvConstant.PREFIX_SPECIES_FILE;
+                    ep.curr_name_pop_specie = EnvConstant.PREFIX_SPECIES_FILE;
                     EnvConstant.SUPER_WINNER_ = false;
 
                     if (EnvConstant.TYPE_OF_SIMULATION == EnvConstant.SIMULATION_FROM_TOOTHPICK) {
-                        System.out.println("runner=" + runner + " - gen=" + gen);
-                        runner.setTitle("Toothpick Training Runner: generation " + gen);
-                        epochForToothpick(u_neat, u_pop, gen, curr_name_pop_specie, runner);
+                        System.out.println("runner=" + runner + " - gen=" + ep.gen);
+                        runner.setTitle("Toothpick Training Runner: generation " + ep.gen);
+
+                        // epochForToothpick(u_neat, u_pop, gen, curr_name_pop_specie, runner);
+                        epochForToothpick(ep, runner);
+
                     } else {
-                        epoch(u_neat, u_pop, gen, curr_name_pop_specie);
+
+                        // epoch(u_neat, u_pop, gen, curr_name_pop_specie);
+                        epoch(ep);
+
                     }
 
-                    logger.sendToStatus(" running generation -> " + gen);
+                    logger.sendToStatus(" running generation -> " + ep.gen);
 
                     if (EnvConstant.STOP_EPOCH)
                         break;
@@ -734,25 +807,52 @@ public class Generation extends JPanel implements ActionListener, ItemListener {
                 if (EnvConstant.STOP_EPOCH)
                     break;
             }
+        } catch (Throwable e) {
+            logger.sendToLog(" error in generation.startNeat_MIDDLE() " + e);
+            e.printStackTrace();
+        }
+        return ep;
+    }
 
+    public void spawnPopulation(EpochParams ep) {
+        logger.sendToLog(" generation:      spawning population ...");
+
+        System.out.println(ep.infoString());
+
+        System.out.println("u_genome = " + u_genome); 
+
+        ///// !!!!!!! OMG!
+        // u_genome = "genome_toothpick_4_4";
+        
+        if ((EnvConstant.TYPE_OF_START == EnvConstant.START_FROM_GENOME) &&  (!EnvConstant.FORCE_RESTART))
+            ep.pop = new Population(u_genome, ep.neat.p_pop_size);
+
+        if ((EnvConstant.TYPE_OF_START == EnvConstant.START_FROM_NEW_RANDOM_POPULATION) && (!EnvConstant.FORCE_RESTART ))
+            ep.pop = new Population(ep.neat.p_pop_size, (u_inp_unit + 1), u_out_unit, u_max_unit, u_recurrent, u_prb_link);
+
+        if ((EnvConstant.TYPE_OF_START == EnvConstant.START_FROM_OLD_POPULATION) || (EnvConstant.FORCE_RESTART))
+            ep.pop = new Population(EnvRoutine.getJneatFileData(EnvConstant.NAME_CURR_POPULATION));
+
+        logger.sendToLog(" generation:      verifying spawned population....");
+        System.out.println("POPULATION SPAWNED --> " + ep.pop);
+        ep.pop.verify();
+    }
+    
+    public boolean startNeat_END(EpochParams ep) {
+        try {
             // before exit save last population
-            u_pop.print_to_file_by_species(EnvRoutine.getJneatFileData(EnvConstant.NAME_CURR_POPULATION));
+            ep.pop.print_to_file_by_species(EnvRoutine.getJneatFileData(EnvConstant.NAME_CURR_POPULATION));
             logger.sendToLog(" generation:      saved curr pop file "+EnvRoutine.getJneatFileData(EnvConstant.NAME_CURR_POPULATION));
             logger.sendToLog(" generation:  READY for other request");
 
             if (EnvConstant.TYPE_OF_SIMULATION == EnvConstant.SIMULATION_FROM_TOOTHPICK) {
-                // SAVE FITTEST TOOTHPICK OF THE TRAINING SESSION
-                ToothpickTrainingParams ttParams = EnvConstant.TOOTHPICK_TRAINING_PARAMS;
-                ttParams.setTheBestOne(runner.getFittestTPOrganism());
-                
-                        // System.out.println("runner=" + runner + " - gen=" + gen);
-                        // runner.setTitle("Toothpick Training Runner: generation " + gen);
-                        // epochForToothpick(u_neat, u_pop, gen, curr_name_pop_specie, runner);
-            }            
+                // stop the game from running
+                runner.pause();
+            }
 
-        } catch (Throwable e1) {
-            logger.sendToLog(" error in generation.startNeat() " + e1);
-            e1.printStackTrace();
+        } catch (Throwable e) {
+            logger.sendToLog(" error in generation.startNeat_END() " + e);
+            e.printStackTrace();
         }
 
         EnvConstant.RUNNING = false;
@@ -780,7 +880,7 @@ public class Generation extends JPanel implements ActionListener, ItemListener {
         // methods: one to return the j-th input and one to return
         // the number of inputs / outputs
         // if I/O is from file then it is the file access method that will have it
-        // The same name and that it will do the same thing.         
+        // The same name and that it will do the same thing.
 
         Network _net = organism.net;
         int net_depth = _net.max_depth(); //The max depth of the network to be activated
@@ -815,7 +915,7 @@ public class Generation extends JPanel implements ActionListener, ItemListener {
             // case of input from class java
 
             try {
-                
+
                 int plist_in[] = new int[2];
                 Class[] params_inp = { int[].class };
                 Object[] paramsObj_inp = new Object[] { plist_in };
@@ -1069,7 +1169,8 @@ public class Generation extends JPanel implements ActionListener, ItemListener {
         return false;
     }
 
-    public boolean epoch(Neat _neat, Population pop, int generation, String speciesFilename) {
+    // public boolean epoch(Neat _neat, Population pop, int generation, String speciesFilename) {
+    public boolean epoch(EpochParams ep) {
         msg("Generation.epoch() --- START");
 
         String winner_prefix = EnvConstant.PREFIX_WINNER_FILE;
@@ -1081,7 +1182,8 @@ public class Generation extends JPanel implements ActionListener, ItemListener {
         Document doc2 = textPane2.getDocument();
         String ckx = ck_group.getSelection().getActionCommand();
 
-        if (generation == 1) {
+        // if (generation == 1) {
+        if (ep.gen == 1) {
             v1_fitness_win = new Vector(1, 0);
             v1_fitness = new Vector(1, 0);
             v1_species = new Vector(1, 0);
@@ -1092,7 +1194,7 @@ public class Generation extends JPanel implements ActionListener, ItemListener {
             // Evaluate each organism if exist the winner.........
             // flag and store only the first winner
 
-            Iterator itr_organism = pop.organisms.iterator();
+            Iterator itr_organism = ep.pop.organisms.iterator();
             double max_fitness_of_winner = 0.0;
 
             // EVALUATE EACH ORGANISM
@@ -1123,7 +1225,7 @@ public class Generation extends JPanel implements ActionListener, ItemListener {
 
             //compute average and max fitness for each species
             Iterator itr_specie;
-            itr_specie = pop.species.iterator();
+            itr_specie = ep.pop.species.iterator();
             while (itr_specie.hasNext()) {
                 Species _specie = ((Species) itr_specie.next());
                 _specie.compute_average_fitness();
@@ -1135,15 +1237,18 @@ public class Generation extends JPanel implements ActionListener, ItemListener {
             String cause2 = " ";
 
             // System.out.println("generation = " + generation + " _neat.p_print_every=" + _neat.p_print_every);
-            if (((generation % _neat.p_print_every) == 0) || (win)) {
+            // if (((generation % ep.neat.p_print_every) == 0) || (win)) {
+            if (((ep.gen % ep.neat.p_print_every) == 0) || (win)) {
 
-                if ((generation % _neat.p_print_every) == 0)
+                // if ((generation % ep.neat.p_print_every) == 0)
+                if ((ep.gen % ep.neat.p_print_every) == 0)
                     cause1 = " request";
                 if (win)
                     cause2 = " winner";
 
-                String name_of_specie = EnvRoutine.getJneatFileData(speciesFilename) + generation;
-                pop.print_to_file_by_species(name_of_specie);
+                // String name_of_specie = EnvRoutine.getJneatFileData(speciesFilename) + ep.gen;
+                String name_of_specie = EnvRoutine.getJneatFileData(ep.curr_name_pop_specie) + ep.gen;
+                ep.pop.print_to_file_by_species(name_of_specie);
                 logger.sendToLog( " generation:      write/rewrite file specie  " + name_of_specie + " -> " + cause1 + cause2);
 
             }
@@ -1151,20 +1256,20 @@ public class Generation extends JPanel implements ActionListener, ItemListener {
             // if exist a winner write to file
             if (win) {
                 String name_of_winner;
-                logger.sendToLog( " generation:      in this generation " + generation + " i have found at least one WINNER  ");
+                logger.sendToLog( " generation:      in this generation " + ep.gen + " i have found at least one WINNER  ");
                 int conta = 0;
-                itr_organism = pop.getOrganisms().iterator();
+                itr_organism = ep.pop.getOrganisms().iterator();
                 while (itr_organism.hasNext()) {
                     Organism _organism = ((Organism) itr_organism.next());
                     if (_organism.winner) {
-                        name_of_winner = EnvRoutine.getJneatFileData(winner_prefix) + generation + "_" + _organism.getGenome().genome_id;
+                        name_of_winner = EnvRoutine.getJneatFileData(winner_prefix) + ep.gen + "_" + _organism.getGenome().genome_id;
                         _organism.getGenome().print_to_filename(name_of_winner);
                         // EnvConstant.SERIAL_WINNER++;
                         conta++;
                     }
                     if (EnvConstant.SUPER_WINNER_) {
-                        logger.sendToLog(" generation:      in this generation " + generation + " i have found a SUPER WINNER ");
-                        name_of_winner = EnvRoutine.getJneatFileData(winner_prefix)+ "_SUPER_" + generation + "_" + _organism.getGenome().genome_id;
+                        logger.sendToLog(" generation:      in this generation " + ep.gen + " i have found a SUPER WINNER ");
+                        name_of_winner = EnvRoutine.getJneatFileData(winner_prefix)+ "_SUPER_" + ep.gen + "_" + _organism.getGenome().genome_id;
                         _organism.getGenome().print_to_filename(name_of_winner);
                         //  EnvConstant.SERIAL_SUPER_WINNER++;
                         EnvConstant.SUPER_WINNER_ = false;
@@ -1177,11 +1282,11 @@ public class Generation extends JPanel implements ActionListener, ItemListener {
             // wait an epoch and make a reproduction of the best species
             //
 
-            pop.epoch(generation);
+            ep.pop.epoch(ep.gen);
 
             if (!EnvConstant.REPORT_SPECIES_TESTA.equalsIgnoreCase("")) {
 
-                doc2.insertString(doc2.getLength(),  "\n\n GENERATION : " + generation,  textPane2.getStyle(My_styles[2]));
+                doc2.insertString(doc2.getLength(),  "\n\n GENERATION : " + ep.gen,  textPane2.getStyle(My_styles[2]));
                 doc2.insertString(doc2.getLength(), EnvConstant.REPORT_SPECIES_TESTA, textPane2.getStyle(My_styles[1]));
                 doc2.insertString(doc2.getLength(), EnvConstant.REPORT_SPECIES_CORPO, textPane2.getStyle(My_styles[3]));
                 doc2.insertString(doc2.getLength(), EnvConstant.REPORT_SPECIES_CODA,  textPane2.getStyle(My_styles[1]));
@@ -1196,9 +1301,9 @@ public class Generation extends JPanel implements ActionListener, ItemListener {
                     int idx = ((Organism) EnvConstant.FIRST_ORGANISM_WINNER).genome.genome_id;
 
                     if (win)
-                        riga1 = "Time : " + generation + " genome (id=" + idx + ") is Current CHAMPION - WINNER ";
+                        riga1 = "Time : " + ep.gen + " genome (id=" + idx + ") is Current CHAMPION - WINNER ";
                     else
-                        riga1 = "Time : " + generation + " genome (id=" + idx + ") is Current CHAMPION ";
+                        riga1 = "Time : " + ep.gen + " genome (id=" + idx + ") is Current CHAMPION ";
 
 
                     drawGraph((Organism) EnvConstant.FIRST_ORGANISM_WINNER, riga1, mappa_graph);
@@ -1209,25 +1314,25 @@ public class Generation extends JPanel implements ActionListener, ItemListener {
                 }
             }
 
-            v1_species.add(new Double(generation));
-            v1_species.add(new Double(pop.getSpecies().size()));
+            v1_species.add(new Double(ep.gen));
+            v1_species.add(new Double(ep.pop.getSpecies().size()));
 
-            v1_fitness.add(new Double(generation));
-            v1_fitness.add(new Double(pop.getHighest_fitness()));
+            v1_fitness.add(new Double(ep.gen));
+            v1_fitness.add(new Double(ep.pop.getHighest_fitness()));
 
-            v1_fitness_win.add(new Double(generation));
+            v1_fitness_win.add(new Double(ep.gen));
             v1_fitness_win.add(new Double(EnvConstant.MAX_WINNER_FITNESS));
 
 
-            drawCurve(riga1, pop.getHighest_fitness(), generation,  pop.getSpecies().size(),  _neat.p_pop_size);
+            drawCurve(riga1, ep.pop.getHighest_fitness(), ep.gen,  ep.pop.getSpecies().size(),  ep.neat.p_pop_size);
 
 
             if (win)
-                riga1 = "Time : " + generation + " found WINNER ! ";
+                riga1 = "Time : " + ep.gen + " found WINNER ! ";
             else
-                riga1 = "Time : " + generation + " ";
+                riga1 = "Time : " + ep.gen + " ";
 
-            drawCurve(riga1, pop.getHighest_fitness(), generation,  pop.getSpecies().size(),  _neat.p_pop_size);
+            drawCurve(riga1, ep.pop.getHighest_fitness(), ep.gen,  ep.pop.getSpecies().size(),  ep.neat.p_pop_size);
 
             if (ckx.equalsIgnoreCase("text output")) {
                 p3.removeAll();
@@ -1257,7 +1362,7 @@ public class Generation extends JPanel implements ActionListener, ItemListener {
                 p3.removeAll();
                 p3.add(p3_curve, BorderLayout.CENTER);
                 mappa_curve.setScale((p3.getWidth()), p3.getHeight());
-                drawCurve(riga1, pop.getHighest_fitness(), generation,  pop.getSpecies().size(),  _neat.p_pop_size);
+                drawCurve(riga1, ep.pop.getHighest_fitness(), ep.gen,  ep.pop.getSpecies().size(),  ep.neat.p_pop_size);
                 mappa_curve.repaint();
                 p3_curve.repaint();
             }
@@ -1285,10 +1390,25 @@ public class Generation extends JPanel implements ActionListener, ItemListener {
         }
     }
 
-    public boolean epochForToothpick(Neat _neat, Population pop, int generation, String filename,
-                                     ToothpickTrainingRunner runner) {
+    // public boolean epochForToothpick(Neat _neat, Population pop, int generation, String filename,
+    //                                  ToothpickTrainingRunner runner) {
+    public boolean epochForToothpick(EpochParams ep, ToothpickTrainingRunner runner) {
         msg("Generation.epochForToothpick() --- START");
+        runEpochForToothpick(ep, runner);
+        // return afterEpochForToothpick(ep, runner);
+        return afterEpochForToothpick(ep, runner.getGenerationFirstWinner());
+    }
+    
+    public void runEpochForToothpick(EpochParams ep, ToothpickTrainingRunner runner) {
+        // EVALUATE EACH ORGANISM
+        // run all simultaneously, so we can have a nice visualisation
+        System.out.println("GENERATION " + ep.gen + ": evaluate organisms");
+        runner.evaluateGeneration(ep.pop);
+    }
 
+    // public boolean afterEpochForToothpick(EpochParams ep, ToothpickTrainingRunner runner) {
+    public boolean afterEpochForToothpick(EpochParams ep, Organism generationFirstWinner) {
+            
         String winner_prefix = EnvConstant.PREFIX_WINNER_FILE;
         String riga1 = null; // line
         // boolean esito = false; // outcome
@@ -1298,7 +1418,7 @@ public class Generation extends JPanel implements ActionListener, ItemListener {
         Document doc2 = textPane2.getDocument();
         String ckx = ck_group.getSelection().getActionCommand();
 
-        if (generation == 1) {
+        if (ep.gen == 1) {
             v1_fitness_win = new Vector(1, 0);
             v1_fitness = new Vector(1, 0);
             v1_species = new Vector(1, 0);
@@ -1306,20 +1426,23 @@ public class Generation extends JPanel implements ActionListener, ItemListener {
 
         try {
 
-            // EVALUATE EACH ORGANISM
-            // run all simultaneously, so we can have a nice visualisation
-            System.out.println("GENERATION " + generation + ": evaluate organisms");
-            runner.evaluateGeneration(pop);
+            // // EVALUATE EACH ORGANISM
+            // // run all simultaneously, so we can have a nice visualisation
+            // System.out.println("GENERATION " + ep.gen + ": evaluate organisms");
+            // runner.evaluateGeneration(ep.pop);
+
             
+
             // FIND FIRST WINNER
             double max_fitness_of_winner = 0.0;
-            Organism firstWinner = runner.getGenerationFirstWinner();
+            // Organism firstWinner = runner.getGenerationFirstWinner();
+            Organism firstWinner = generationFirstWinner;
 
             if (firstWinner != null) {
 
                 // store flag
                 win = true;
-                
+
                 if (firstWinner.getFitness() > max_fitness_of_winner) {
                     max_fitness_of_winner = firstWinner.getFitness();
                     EnvConstant.MAX_WINNER_FITNESS = max_fitness_of_winner;
@@ -1335,7 +1458,7 @@ public class Generation extends JPanel implements ActionListener, ItemListener {
 
 
             //compute average and max fitness for each species
-            Iterator itr_specie = pop.species.iterator();
+            Iterator itr_specie = ep.pop.species.iterator();
             int i = 1;
             while (itr_specie.hasNext()) {
                 Species _specie = ((Species) itr_specie.next());
@@ -1345,21 +1468,22 @@ public class Generation extends JPanel implements ActionListener, ItemListener {
                                    + ": average-fitness=" + _specie.getAve_fitness()
                                    + ": greatest-fitness=" + _specie.getMax_fitness());
             }
-            // Only print to file every print_every generations
+            // Only print to file every print_every ep.gen
 
             String cause1 = " ";
             String cause2 = " ";
 
             // System.out.println("generation = " + generation + " _neat.p_print_every=" + _neat.p_print_every);
-            if (((generation % _neat.p_print_every) == 0) || (win)) {
+            if (((ep.gen % ep.neat.p_print_every) == 0) || (win)) {
 
-                if ((generation % _neat.p_print_every) == 0)
+                if ((ep.gen % ep.neat.p_print_every) == 0)
                     cause1 = " request";
                 if (win)
                     cause2 = " winner";
 
-                String name_of_specie = EnvRoutine.getJneatFileData(filename) + generation;
-                pop.print_to_file_by_species(name_of_specie);
+                // String name_of_specie = EnvRoutine.getJneatFileData(filename) + ep.gen;
+                String name_of_specie = EnvRoutine.getJneatFileData(ep.curr_name_pop_specie) + ep.gen;
+                ep.pop.print_to_file_by_species(name_of_specie);
                 logger.sendToLog( " generation:      write/rewrite file specie  " + name_of_specie + " -> " + cause1 + cause2);
 
             }
@@ -1367,21 +1491,21 @@ public class Generation extends JPanel implements ActionListener, ItemListener {
             // if exist a winner write to file
             if (win) {
                 String name_of_winner;
-                logger.sendToLog( " generation:      in this generation " + generation + " i have found at least one WINNER  ");
+                logger.sendToLog( " generation:      in this ep.gen " + ep.gen + " i have found at least one WINNER  ");
                 int conta = 0;
-                Iterator itr_organism = pop.organisms.iterator();
-                itr_organism = pop.getOrganisms().iterator();
+                Iterator itr_organism = ep.pop.organisms.iterator();
+                itr_organism = ep.pop.getOrganisms().iterator();
                 while (itr_organism.hasNext()) {
                     Organism _organism = ((Organism) itr_organism.next());
                     if (_organism.winner) {
-                        name_of_winner = EnvRoutine.getJneatFileData(winner_prefix) + generation + "_" + _organism.getGenome().genome_id;
+                        name_of_winner = EnvRoutine.getJneatFileData(winner_prefix) + ep.gen + "_" + _organism.getGenome().genome_id;
                         _organism.getGenome().print_to_filename(name_of_winner);
                         // EnvConstant.SERIAL_WINNER++;
                         conta++;
                     }
                     if (EnvConstant.SUPER_WINNER_) {
-                        logger.sendToLog(" generation:      in this generation " + generation + " i have found a SUPER WINNER ");
-                        name_of_winner = EnvRoutine.getJneatFileData(winner_prefix)+ "_SUPER_" + generation + "_" + _organism.getGenome().genome_id;
+                        logger.sendToLog(" generation:      in this generation " + ep.gen + " i have found a SUPER WINNER ");
+                        name_of_winner = EnvRoutine.getJneatFileData(winner_prefix)+ "_SUPER_" + ep.gen + "_" + _organism.getGenome().genome_id;
                         _organism.getGenome().print_to_filename(name_of_winner);
                         //  EnvConstant.SERIAL_SUPER_WINNER++;
                         EnvConstant.SUPER_WINNER_ = false;
@@ -1394,11 +1518,11 @@ public class Generation extends JPanel implements ActionListener, ItemListener {
             // wait an epoch and make a reproduction of the best species
             //
 
-            pop.epoch(generation);
+            ep.pop.epoch(ep.gen);
 
             if (!EnvConstant.REPORT_SPECIES_TESTA.equalsIgnoreCase("")) {
 
-                doc2.insertString(doc2.getLength(),  "\n\n GENERATION : " + generation,  textPane2.getStyle(My_styles[2]));
+                doc2.insertString(doc2.getLength(),  "\n\n GENERATION : " + ep.gen,  textPane2.getStyle(My_styles[2]));
                 doc2.insertString(doc2.getLength(), EnvConstant.REPORT_SPECIES_TESTA, textPane2.getStyle(My_styles[1]));
                 doc2.insertString(doc2.getLength(), EnvConstant.REPORT_SPECIES_CORPO, textPane2.getStyle(My_styles[3]));
                 doc2.insertString(doc2.getLength(), EnvConstant.REPORT_SPECIES_CODA,  textPane2.getStyle(My_styles[1]));
@@ -1413,9 +1537,9 @@ public class Generation extends JPanel implements ActionListener, ItemListener {
                     int idx = ((Organism) EnvConstant.FIRST_ORGANISM_WINNER).genome.genome_id;
 
                     if (win)
-                        riga1 = "Time : " + generation + " genome (id=" + idx + ") is Current CHAMPION - WINNER ";
+                        riga1 = "Time : " + ep.gen + " genome (id=" + idx + ") is Current CHAMPION - WINNER ";
                     else
-                        riga1 = "Time : " + generation + " genome (id=" + idx + ") is Current CHAMPION ";
+                        riga1 = "Time : " + ep.gen + " genome (id=" + idx + ") is Current CHAMPION ";
 
 
                     drawGraph((Organism) EnvConstant.FIRST_ORGANISM_WINNER, riga1, mappa_graph);
@@ -1426,25 +1550,25 @@ public class Generation extends JPanel implements ActionListener, ItemListener {
                 }
             }
 
-            v1_species.add(new Double(generation));
-            v1_species.add(new Double(pop.getSpecies().size()));
+            v1_species.add(new Double(ep.gen));
+            v1_species.add(new Double(ep.pop.getSpecies().size()));
 
-            v1_fitness.add(new Double(generation));
-            v1_fitness.add(new Double(pop.getHighest_fitness()));
+            v1_fitness.add(new Double(ep.gen));
+            v1_fitness.add(new Double(ep.pop.getHighest_fitness()));
 
-            v1_fitness_win.add(new Double(generation));
+            v1_fitness_win.add(new Double(ep.gen));
             v1_fitness_win.add(new Double(EnvConstant.MAX_WINNER_FITNESS));
 
 
-            drawCurve(riga1, pop.getHighest_fitness(), generation,  pop.getSpecies().size(),  _neat.p_pop_size);
+            drawCurve(riga1, ep.pop.getHighest_fitness(), ep.gen,  ep.pop.getSpecies().size(),  ep.neat.p_pop_size);
 
 
             if (win)
-                riga1 = "Time : " + generation + " found WINNER ! ";
+                riga1 = "Time : " + ep.gen + " found WINNER ! ";
             else
-                riga1 = "Time : " + generation + " ";
+                riga1 = "Time : " + ep.gen + " ";
 
-            drawCurve(riga1, pop.getHighest_fitness(), generation,  pop.getSpecies().size(),  _neat.p_pop_size);
+            drawCurve(riga1, ep.pop.getHighest_fitness(), ep.gen,  ep.pop.getSpecies().size(),  ep.neat.p_pop_size);
 
             if (ckx.equalsIgnoreCase("text output")) {
                 p3.removeAll();
@@ -1474,7 +1598,7 @@ public class Generation extends JPanel implements ActionListener, ItemListener {
                 p3.removeAll();
                 p3.add(p3_curve, BorderLayout.CENTER);
                 mappa_curve.setScale((p3.getWidth()), p3.getHeight());
-                drawCurve(riga1, pop.getHighest_fitness(), generation,  pop.getSpecies().size(),  _neat.p_pop_size);
+                drawCurve(riga1, ep.pop.getHighest_fitness(), ep.gen,  ep.pop.getSpecies().size(),  ep.neat.p_pop_size);
                 mappa_curve.repaint();
                 p3_curve.repaint();
             }
@@ -1913,6 +2037,27 @@ public class Generation extends JPanel implements ActionListener, ItemListener {
 
     public void selectOptionGraphChampion() {
         ck2.doClick();
+    }
+
+    public class EpochParams {
+        public Neat neat;
+        public Population pop;
+        public int gen;
+        public String curr_name_pop_specie;
+        public EpochParams(Neat neat, Population pop, int gen, String curr_name_pop_specie) {
+            this.neat = neat;
+            this.pop = pop;
+            this.gen = gen;
+            this.curr_name_pop_specie = curr_name_pop_specie;
+        }
+        public String infoString() {
+            return "EpochParams:"
+                + "\n... neat=" + neat
+                + "\n... population=" + pop
+                + "\n... generation=" + gen
+                + "\n... curr_name_pop_specie=" + curr_name_pop_specie;
+
+        }
     }
 
 }

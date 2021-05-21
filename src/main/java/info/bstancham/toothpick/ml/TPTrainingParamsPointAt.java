@@ -1,6 +1,6 @@
 package info.bstancham.toothpick.ml;
 
-// import info.bschambers.toothpick.actor.TPFactory;
+import info.bschambers.toothpick.TPBase;
 import info.bschambers.toothpick.TPProgram;
 import info.bschambers.toothpick.PBRandActorSetup;
 import info.bschambers.toothpick.actor.*;
@@ -27,20 +27,18 @@ import jneat.neat.Organism;
  */
 public class TPTrainingParamsPointAt extends ToothpickTrainingParams {
 
-    public boolean mobileEnemy = false;
-
-    public TPTrainingParamsPointAt(String label) {
-        super(label, "genome_toothpick_3_2_connected");
+    public TPTrainingParamsPointAt(TPBase base) {
+        super(base, "Point-At", "genome_toothpick_3_2_connected");
     }
 
     @Override
-    protected TPProgram makeProgram() {
+    protected TPProgram makeMasterProgram() {
         TPProgram prog = MLUtil.makeProgHorizVsVertNoCollision();
         // set drone-actor to new random position at beginning of each generation
         PBRandActorSetup randDroneSetup = new PBRandActorSetup();
         randDroneSetup.setTarget(MLUtil.VERT_NAME);
         randDroneSetup.initBoundsRightHandSide(prog.getGeometry());
-        if (mobileEnemy)
+        if (targetIsMobile())
             randDroneSetup.initInertia(-1, 1);
         prog.addResetBehaviour(randDroneSetup);
         prog.setResetSnapshot();
@@ -55,8 +53,6 @@ public class TPTrainingParamsPointAt extends ToothpickTrainingParams {
     @Override
     protected NeuralNetworkController makeController() {
         NeuralNetworkController nnc = new NeuralNetworkController();
-        // ActorController8WayInertia ac = new ActorController8WayInertia();
-        // ActorControllerUDLR ac = new ActorControllerThrustInertia();
         ActorControllerUDLR ac = new ActorControllerThrustAndAngleInertia();
         nnc.setActorController(ac);
         addInputs(nnc);

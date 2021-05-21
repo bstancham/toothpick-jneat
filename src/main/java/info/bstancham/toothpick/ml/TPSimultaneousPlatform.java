@@ -34,7 +34,7 @@ public class TPSimultaneousPlatform extends TPPlatform {
         resetSynthesisProgram();
     }
     
-    private void resetSynthesisProgram() {
+    protected void resetSynthesisProgram() {
         // TPProgram prog = new TPProgram("synthesis program");
         tpspProg = new TPSPProgram("synthesis program");
         tpspProg.setGeometry(geom);
@@ -73,6 +73,11 @@ public class TPSimultaneousPlatform extends TPPlatform {
     public void discardAllPrograms() {
         resetSynthesisProgram();
         programs.clear();
+    }
+
+    public void resetAllPrograms() {
+        for (TPProgram prog : programs)
+            prog.reset();
     }
 
     public int numPrograms() {

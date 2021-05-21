@@ -1,6 +1,7 @@
 package jneat.gui;
 
 import info.bstancham.toothpick.ml.ToothpickTrainingParams;
+import info.bstancham.toothpick.ml.ToothpickTrainingRunner;
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
@@ -24,6 +25,8 @@ public class MainGui extends JPanel {
 
     JTabbedPane jtabbedPane1;
 
+    protected HistoryLog logger;
+
     public static void main(String[] args) {
         launchGui();
     }
@@ -40,7 +43,7 @@ public class MainGui extends JPanel {
 
         try {
             
-            jp = new JFrame("  J N E A T   Java simulator for   NeuroEvolution of Augmenting Topologies  ");
+            jp = new JFrame("J N E A T   Java simulator for NeuroEvolution of Augmenting Topologies");
             pn1 = new MainGui(jp);
 
             //	  jp.getContentPane().add(pn1);
@@ -111,8 +114,6 @@ public class MainGui extends JPanel {
         contentPane.add(paneSplit1,BorderLayout.CENTER);
 
     }
-
-    protected HistoryLog logger;
 
     /** Brings the PARAMETER panel to front of the tabbed pane. */
     public void showParameterPanel() {
@@ -209,5 +210,11 @@ public class MainGui extends JPanel {
     public void setToothpickTrainingParams(ToothpickTrainingParams params) {
         EnvConstant.TOOTHPICK_TRAINING_PARAMS = params;
     }
+
+    public void setToothpickTrainingRunner(ToothpickTrainingRunner runner) {
+        EnvConstant.TOOTHPICK_TRAINING_RUNNER = runner;
+    }
+
+    public Generation getGenerationPanel() { return a_generation; }
 
 }

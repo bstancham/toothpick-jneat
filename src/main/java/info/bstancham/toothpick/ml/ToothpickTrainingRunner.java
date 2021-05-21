@@ -9,51 +9,33 @@ import jneat.neat.*;
 public class ToothpickTrainingRunner {
 
     private String title;
-    TPSwingUI ui;
-    TPBase base;
-    TPSimultaneousPlatform platform;
+    private TPSimultaneousPlatform platform;
+    private ToothpickTrainingParams params;
 
-    // List<ToothpickFitness> fitness = new ArrayList<>();
-
-    ToothpickTrainingParams params;
-
-    private int numIterations = 2000;
-
-    TPOrganism generationFirstWinner = null;
-
+    private TPOrganism generationFirstWinner = null;
     private double highestFitness = 0;
     private TPOrganism fittestOrganism = null;
 
-    public ToothpickTrainingRunner(TPGeometry geom, ToothpickTrainingParams params) {
+    public ToothpickTrainingRunner(ToothpickTrainingParams params) {
         this.params = params;
-
-        title = "";
-        ui = new TPSwingUI(title);
-        base = new TPBase();
-        platform  = new TPSimultaneousPlatform(title, geom);
-        // platform.setSmearMode(true);
-        base.setPlatform(platform);
-        base.setUI(ui);
-        ui.setVisible(true);
-        // base.run();
+        title = "Toothpick Training Runner: " + params.label;
+        platform  = new TPSimultaneousPlatform(title, params.getGeometry());
     }
 
-    // public TPGroupEvaluator(TPGeometry geom, TPBase base) {
-    //     this.base = base;
-    //     // title = "Group Evaluator";
-    //     // ui = new TPSwingUI(title);
-    //     // base = new TPBase();
-    //     platform  = new TPSimultaneousPlatform("Group Evaluator", geom);
-    //     // // platform.setSmearMode(true);
-    //     // base.setPlatform(platform);
-    //     // base.setUI(ui);
-    //     // ui.setVisible(true);
-    //     // // base.run();
-    // }
+    public ToothpickTrainingParams getParams() { return params; }
+
+    public void show() {
+        params.getBase().setPlatform(platform);
+        params.getBase().hideMenu();
+    }
+
+    public void pause() {
+        params.getBase().showMenu();
+    }
 
     public void setTitle(String title) {
         this.title = title;
-        ui.setTitle(title);
+        params.getBase().setWindowTitle(title);
     }
 
     public TPOrganism getFittestTPOrganism() {
@@ -63,24 +45,14 @@ public class ToothpickTrainingRunner {
     public void evaluateGeneration(Population pop) {
 
         platform.discardAllPrograms();
-        // fitness.clear();
+
         params.nextGeneration(pop.organisms);
 
         int num = pop.organisms.size();
-        // // HorizVsVert[] programs = new HorizVsVert[num];
-        // TPProgram[] programs = new TPProgram[num];
-        // ToothpickFitness[] fitness = new ToothpickFitness[num];
         for (int i = 0; i < num; i++) {
-        //     // programs[i] = makeProgram(pop.getOrganisms().get(i));
-        //     // platform.addProgram(makeProgram((Organism) pop.organisms.get(i)));
-        //     platform.addProgram(params.newProgramCopy((Organism) pop.organisms.get(i)));
-        //     // fitness.add(params.newFitnessEngine());
-        //     fitness[i] = params.newFitnessEngine();
             platform.addProgram(params.getTPOrganism(i).program);
         }
 
-        // runGeneration(pop, programs, fitness);
-        // runGeneration(pop, fitness);
         runGeneration();
 
         // search for fittest
@@ -89,15 +61,14 @@ public class ToothpickTrainingRunner {
             if (tpOrg.getFitness() > highestFitness) {
                 fittestOrganism = tpOrg;
                 highestFitness = tpOrg.getFitness();
+                // params.setTheBestOne(tpOrg);
                 System.out.println("NEW FITTEST: fitness=" + highestFitness + " organism=" + tpOrg);
             }
         }
     }
 
-    // private void runGeneration(Population pop, HorizVsVert[] programs) {
-    // private void runGeneration(Population pop, ToothpickFitness[] fitness) {
     private void runGeneration() {
-
+        int numIterations = params.iterationsPerGeneration;
         System.out.println("ToothpickTrainingRunner (" + title + ") runGeneration() --- "
                            + numIterations + " iterations");
 
@@ -113,34 +84,19 @@ public class ToothpickTrainingRunner {
             //                    + ") runGeneration() --- iteration " + iteration);
 
             // step the action on
-            base.iterate();
+            params.getBase().iterate();
 
             if (iteration == 1)
                 platform.setSmearMode(true);
 
             // update stats & stuff
-            // for (int i = 0; i < platform.numPrograms(); i++) {
             for (int i = 0; i < params.numTPOrganisms(); i++) {
 
                 TPOrganism tpOrg = params.getTPOrganism(i);
                 tpOrg.update();
-                // tpOrg.updateFitness();
-                
+
                 if (tpOrg.isWinner() && generationFirstWinner == null)
                     generationFirstWinner = tpOrg;
-
-                // TPProgram prog = platform.getProgram(i);
-                // // HorizVsVert prog = (HorizVsVert) platform.getProgram(i);
-                // Organism org = (Organism) pop.organisms.get(i);
-                // fitness[i].updateFitness(prog);
-
-                // if (!prog.getVertActor().isAlive()) {
-                //     org.winner = true;
-                //     if (generationFirstWinner == null) {
-                //         generationFirstWinner = org;
-                //     }
-                // }
-                
             }
         }
     }
@@ -154,28 +110,5 @@ public class ToothpickTrainingRunner {
             return generationFirstWinner.org;
         return null;
     }
-    
-
-    // // private HorizVsVert makeProgram(Organism org, double xInertia, double yInertia) {
-    // private HorizVsVert makeProgram(Organism org) {
-    //     HorizVsVert prog = new HorizVsVert();
-    //     TPActor horiz = prog.getHorizActor();
-    //     TPActor vert = prog.getVertActor();
-
-    //     Color hc = ColorGetter.randColor();
-    //     Color vc = ColorGetter.setBrightness(hc, 0.8);
-    //     horiz.setColorGetter(new ColorMono(hc));
-    //     vert.setColorGetter(new ColorMono(vc));
-
-    //     // set up neural network controller for horizontal actor
-    //     horiz.addBehaviour(new NeuralNetworkController(org.net, vert));
-        
-    //     // // set inertia for vertical actor
-    //     // vert.xInertia = xInertia;
-    //     // vert.yInertia = yInertia;
-    //     params.setupDrone(vert);
-        
-    //     return prog;
-    // }
 
 }

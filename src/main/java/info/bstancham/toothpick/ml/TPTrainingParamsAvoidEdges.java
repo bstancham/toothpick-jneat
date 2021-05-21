@@ -1,6 +1,6 @@
 package info.bstancham.toothpick.ml;
 
-// import info.bschambers.toothpick.actor.TPFactory;
+import info.bschambers.toothpick.TPBase;
 import info.bschambers.toothpick.TPProgram;
 import info.bschambers.toothpick.PBRandActorSetup;
 import info.bschambers.toothpick.actor.*;
@@ -30,31 +30,17 @@ import jneat.neat.Organism;
  */
 public class TPTrainingParamsAvoidEdges extends ToothpickTrainingParams {
 
-    // private static final String PROTAGONIST_NAME = "protagonist";
-
-    // private TPActor protagonist;
-
-    public TPTrainingParamsAvoidEdges(String label) {
-        super(label, "genome_toothpick_4_4");
-        // protagonist = MLUtil.makeLineActor(-50, 0, 50, 0, 200, 350);
-        // protagonist.setBoundaryBehaviour(TPActor.BoundaryBehaviour.DIE_AT_BOUNDS);
-        // protagonist.xInertia = 0;
-        // protagonist.yInertia = 0;
-        // protagonist.setColorGetter(new ColorMono(Color.RED));
-        // protagonist.setVertexColorGetter(new ColorMono(Color.WHITE));
-        // // protagonist.name = PROTAGONIST_NAME;
-        // protagonist.name = MLUtil.HORIZ_NAME;
+    public TPTrainingParamsAvoidEdges(TPBase base) {
+        super(base, "Avoid-Edges", "genome_toothpick_4_4");
     }
 
     /** WARNING! Returns null if actor with name {@link PROTAGONIST_NAME} does not exist. */
     public static TPActor getProtagonist(TPProgram prog) {
-        // return prog.getActor(PROTAGONIST_NAME);
-        // return prog.getActor(PROTAGONIST_NAME);
         return MLUtil.getHorizActor(prog);
     }
     
     @Override
-    protected TPProgram makeProgram() {
+    protected TPProgram makeMasterProgram() {
         TPProgram prog = MLUtil.makeProgHorizVsVertNoCollision();
         // set drone-actor to new random position at beginning of each generation
 
@@ -64,23 +50,9 @@ public class TPTrainingParamsAvoidEdges extends ToothpickTrainingParams {
         PBRandActorSetup randSetup = new PBRandActorSetup();
         randSetup.setTarget(MLUtil.HORIZ_NAME);
         randSetup.initBoundsWithMargins(prog.getGeometry(), 100);
-        // if (mobileEnemy)
-        //     // randDroneSetup.initInertia(-1, 1);
-        //     randDroneSetup.initInertia(0, 1);
         prog.addResetBehaviour(randSetup);
         prog.setResetSnapshot();
         return prog;
-
-        // TPProgram prog = new TPProgram("Deadly Edges");
-        // prog.addActor(protagonist);
-        // // set protagonist to new random position at beginning of each generation
-        // RandActorSetupBehaviour randSetup = new RandActorSetupBehaviour();
-        // // randSetup.setTarget(PROTAGONIST_NAME);
-        // randSetup.setTarget(MLUtil.HORIZ_NAME);
-        // randSetup.initBoundsWithMargins(prog.getGeometry(), 100);
-        // prog.addResetBehaviour(randSetup);
-        // prog.setResetSnapshot();
-        // return prog;
     }
 
     @Override
