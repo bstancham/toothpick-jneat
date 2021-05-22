@@ -432,7 +432,7 @@ public class Generation extends JPanel implements ActionListener, ItemListener {
         }
     }
             
-            // startNeat();
+    // startNeat();
 
     public void logInfoAfterEnd() {
         try {
@@ -1408,7 +1408,7 @@ public class Generation extends JPanel implements ActionListener, ItemListener {
 
     // public boolean afterEpochForToothpick(EpochParams ep, ToothpickTrainingRunner runner) {
     public boolean afterEpochForToothpick(EpochParams ep, Organism generationFirstWinner) {
-            
+
         String winner_prefix = EnvConstant.PREFIX_WINNER_FILE;
         String riga1 = null; // line
         // boolean esito = false; // outcome
@@ -1430,8 +1430,6 @@ public class Generation extends JPanel implements ActionListener, ItemListener {
             // // run all simultaneously, so we can have a nice visualisation
             // System.out.println("GENERATION " + ep.gen + ": evaluate organisms");
             // runner.evaluateGeneration(ep.pop);
-
-            
 
             // FIND FIRST WINNER
             double max_fitness_of_winner = 0.0;
@@ -1485,7 +1483,6 @@ public class Generation extends JPanel implements ActionListener, ItemListener {
                 String name_of_specie = EnvRoutine.getJneatFileData(ep.curr_name_pop_specie) + ep.gen;
                 ep.pop.print_to_file_by_species(name_of_specie);
                 logger.sendToLog( " generation:      write/rewrite file specie  " + name_of_specie + " -> " + cause1 + cause2);
-
             }
 
             // if exist a winner write to file

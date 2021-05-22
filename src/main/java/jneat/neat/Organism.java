@@ -54,7 +54,7 @@ public class Organism extends Neat {
     /** has a change in a structure of baby ? */
     boolean mut_struct_baby;
 
-    /** has a mating  in  baby ? */
+    /** has a mating in baby ? */
     boolean mate_baby;
 
     public double getFitness() {

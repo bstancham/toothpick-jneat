@@ -296,7 +296,8 @@ public class App {
                                  platform::isSmearMode,
                                  platform::setSmearMode));
         m.add(new TPMenuItemSimple(() -> rerunButtonText(platform), () -> rerunButtonAction(platform)));
-        m.add(makeProgMenu("play against current champion", makeProgChampMatch(platform)));
+        m.add(makeChampMatchMenu(platform));
+        // m.add(makeProgMenu("play against current champion", makeProgChampMatch(platform)));
         m.add(new TPMenuItemSimple("reset experiment", () -> resetExperiment(platform)));
         return m;
     }
@@ -390,32 +391,91 @@ public class App {
         return new TPTrainingPlatform(ttParams, base);
     }
 
-    private TPProgram makeProgChampMatch(TPTrainingPlatform platform) {
+    private TPMenu makeChampMatchMenu(TPTrainingPlatform platform) {
+        // create champ-match program
         TPProgram prog = new TPProgram("play against current champion");
-        prog.addResetBehaviour(new PBMisc(this::setupChampMatch));
+        ChampMatchSetup champSetup = new ChampMatchSetup();
+        prog.addResetBehaviour(champSetup);
+        prog.setSmearMode(true);
         prog.init();
         prog.setResetSnapshot();
-        return prog;
+        // make champ-match menu
+        TPMenu m = makeProgMenu("play against current champion", prog);
+        m.add(makeMenuSwitchChampion(champSetup, platform));
+        return m;
     }
 
-    private void setupChampMatch(TPProgram prog) {
-        TPTrainingPlatform platform = currentTrainingPlatform;
-        if (platform == null) {
-            System.out.println("setupChampMatch() --> currentTrainingPlatform = NULL!");
-        } else {
-            // champion
-            TPOrganism champ = platform.getFittestTPOrganism();
-            System.out.println("CREATING CHAMP-MATCH AGAINST: " + champ);
-            if (champ != null) {
-                // champ.setDebugMode(true);
-                prog.addActor(champ.getActor());
+    private class ChampMatchSetup implements ProgramBehaviour {
+
+        private TPOrganism champ = null;
+
+        @Override
+        public ChampMatchSetup copy() {
+            ChampMatchSetup out = new ChampMatchSetup();
+            out.champ = champ;
+            return this;
+        };
+
+        @Override
+        public void update(TPProgram prog) {
+            TPTrainingPlatform platform = currentTrainingPlatform;
+            if (platform == null) {
+                System.out.println("setupChampMatch() --> currentTrainingPlatform = NULL!");
+            } else {
+                // champion
+                if (champ == null) {
+                    // champ = platform.getFittestTPOrganism();
+                    if (!platform.getFitList().isEmpty())
+                        champ = platform.getFitList().get(0);
+                }
+                if (champ == null) {
+                    System.out.println("ERROR! CANNOT FIND A CHAMPION!");
+                } else {
+                    System.out.println("CREATING CHAMP-MATCH AGAINST: " + champ + " (fitness="
+                                       + champ.org.getFitness() + ")");
+                    // champ.setDebugMode(true);
+                    prog.addActor(champ.getActor());
+                }
+                // player
+                TPPlayer player = TPFactory.playerLine(new Pt(300, 300));
+                player.getArchetype().name = MLUtil.VERT_NAME;
+                player.getArchetype().setColorGetter(new ColorRandom());
+                player.reset();
+                prog.setPlayer(player);
             }
-            // player
-            TPPlayer player = TPFactory.playerLine(new Pt(300, 300));
-            player.getArchetype().name = MLUtil.VERT_NAME;
-            player.reset();
-            prog.setPlayer(player);
         }
+
+        public void setChampion(TPOrganism tpOrg) {
+            champ = tpOrg;
+        }
+    }
+
+    private TPMenu makeMenuSwitchChampion(ChampMatchSetup champSetup, TPTrainingPlatform platform) {
+        TPMenu m = new TPMenu("switch champion");
+        m.setInitAction(() -> {
+                m.clear();
+                int n = 0;
+                for (TPOrganism tpo : platform.getFitList()) {
+                    n++;
+                    m.add(makeChampionSwitcherOption("TOP " + n, tpo, champSetup));
+                }
+                n = 0;
+                for (TPOrganism tpo : platform.getParams().organisms) {
+                    n++;
+                    m.add(makeChampionSwitcherOption("CURRENT " + n, tpo, champSetup));
+                }
+            });
+        return m;
+    }
+
+    private TPMenuItem makeChampionSwitcherOption(String label, TPOrganism tpo,
+                                                  ChampMatchSetup champSetup) {
+        return new TPMenuItemSimple(label + ": fitness=" + tpo.org.getFitness(),
+                                    () -> {
+                                        champSetup.setChampion(tpo);
+                                        System.out.println("switched champion to " + tpo
+                                                           + " (fitness=" + tpo.org.getFitness() + ")");
+        });
     }
 
     private void incrNumEpoch(ToothpickTrainingParams params, int amt) {

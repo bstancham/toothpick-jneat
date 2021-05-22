@@ -40,7 +40,7 @@ public abstract class ToothpickTrainingParams {
 
     public int iterationsPerGeneration = 1500;
 
-    public boolean mobileTarget = false;
+    public boolean mobileTarget = true;
 
     /**
      * <p>The master-program - an identical copy of this program is made for each of the
@@ -85,7 +85,6 @@ public abstract class ToothpickTrainingParams {
     public void nextGeneration(List<Organism> neatOrganisms) {
         masterProg.reset();
         masterProg.setResetSnapshot();
-
         organisms.clear();
         for (Organism org : neatOrganisms) {
             TPOrganism tpOrg = newTPOrganism(org);

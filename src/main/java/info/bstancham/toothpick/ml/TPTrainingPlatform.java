@@ -2,6 +2,7 @@ package info.bstancham.toothpick.ml;
 
 import info.bschambers.toothpick.*;
 import java.util.ArrayList;
+import java.util.List;
 import jneat.gui.MainGui;
 import jneat.gui.Generation;
 import jneat.common.EnvConstant;
@@ -33,8 +34,8 @@ public class TPTrainingPlatform extends TPSimultaneousPlatform {
 
     private TPOrganism generationFirstWinner = null;
 
-    private TPOrganism fittestTPOrganism = null;
-    private double greatestFitness = 0;
+    private int fitListMaxSize = 5;
+    private List<TPOrganism> fitList = new ArrayList<>();
 
     private boolean savedSmearMode = true;
 
@@ -72,7 +73,9 @@ public class TPTrainingPlatform extends TPSimultaneousPlatform {
 
     public ToothpickTrainingParams getParams() { return ttParams; }
 
-    public TPOrganism getFittestTPOrganism() { return fittestTPOrganism; }
+    // public TPOrganism getFittestTPOrganism() { return fittestTPOrganism; }
+
+    public List<TPOrganism> getFitList() { return fitList; }
 
     public int getCurrentGeneration() { return generationCounter; }
 
@@ -92,32 +95,21 @@ public class TPTrainingPlatform extends TPSimultaneousPlatform {
 
         // System.out.println("ttParams.genomeFilename = " + ttParams.genomeFilename);
         EnvConstant.NAME_GENOMEA = ttParams.genomeFilename;
-        // EnvConstant.NAME_GENOMEA = ttParams.genomeFilename;
 
         genPanel.logInfoBeforeStart();
-
-        // startNeat
-        // Generation.EpochParams ep = genPanel.startNeat_START();
         ep = genPanel.startNeat_START();
-
-        // startNeat_MIDDLE
-
         genPanel.spawnPopulation(ep);
 
-        // initGeneration(ep);
         initGeneration();
 
         counter = 1;
         generationCounter = 1;
         initialised = true;
         finished = false;
-        fittestTPOrganism = null;
-        greatestFitness = 0;
-
+        fitList.clear();
         mode = Mode.READY_TO_TRAIN;
     }
 
-    // private void initGeneration(Generation.EpochParams ep) {
     private void initGeneration() {
         discardAllPrograms();
         ttParams.nextGeneration(ep.pop.organisms);
@@ -175,21 +167,18 @@ public class TPTrainingPlatform extends TPSimultaneousPlatform {
 
                 if (generationCounter >= ttParams.numEpoch) {
                     System.out.println("END OF TRAINING");
-                    System.out.println("... greatest fitness = " + greatestFitness
-                                       + " (" + fittestTPOrganism + ")");
+                    printFitList();
+                    // System.out.println("... greatest fitness = " + greatestFitness
+                    //                    + " (" + fittestTPOrganism + ")");
                     finished = true;
                     mode = Mode.TRAINING_ENDED;
                     base.showMenu();
                 } else {
 
+                    // NEXT GENERATION
+
                     // keep track of all-time fittest
-                    for (int i = 0; i < ttParams.numTPOrganisms(); i++) {
-                        TPOrganism tpOrg = ttParams.getTPOrganism(i);
-                        if (tpOrg.org.getFitness() > greatestFitness) {
-                            fittestTPOrganism = tpOrg;
-                            greatestFitness = tpOrg.org.getFitness();
-                        }
-                    }
+                    updateFitList();
 
                     Organism firstWinner = null;
                     if (generationFirstWinner != null)
@@ -210,6 +199,52 @@ public class TPTrainingPlatform extends TPSimultaneousPlatform {
         if (counter == 1)
             setSmearMode(savedSmearMode);
         counter++;
+    }
+
+    // private void updateFitList(TPOrganism tpOrg) {
+    private void updateFitList() {
+        boolean modified = false;
+        for (int i = 0; i < ttParams.numTPOrganisms(); i++) {
+            TPOrganism tpOrg = ttParams.getTPOrganism(i);
+
+            fitListCheck:
+            if (fitList.size() == 0) {
+                fitList.add(tpOrg);
+                modified = true;
+            } else {
+
+                int f = 0;
+                for (f = 0; f < fitList.size(); f++) {
+                    if (tpOrg.org.getFitness() > fitList.get(f).org.getFitness()) {
+                        // insert in front of current item
+                        fitList.add(f, tpOrg);
+                        // trim list if too long
+                        if (fitList.size() > fitListMaxSize) {
+                            fitList = fitList.subList(0, fitListMaxSize);
+                        }
+                        modified = true;
+                        break fitListCheck;
+                    }
+                }
+
+                if (f < fitListMaxSize) {
+                    // fitList is not full - add to end
+                    fitList.add(tpOrg);
+                    modified = true;
+                }
+            }
+        }
+        if (modified) {
+            System.out.print("FITTEST ORGANISMS UPDATED --> ");
+            printFitList();
+        }
+    }
+
+    private void printFitList() {
+        System.out.println("FITTEST ORGANISMS:");
+        int n = 1;
+        for (TPOrganism tpo : fitList)
+            System.out.println(n++ + ": fitness=" + tpo.org.getFitness() + " (" + tpo + ")");
     }
 
 }
