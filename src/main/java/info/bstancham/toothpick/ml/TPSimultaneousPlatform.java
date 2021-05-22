@@ -1,8 +1,7 @@
 package info.bstancham.toothpick.ml;
 
 import info.bschambers.toothpick.*;
-// import info.bschambers.toothpick.ui.swing.TPSwingUI;
-// import jneat.neat.*;
+import info.bschambers.toothpick.actor.TPActor;
 import java.util.ArrayList;
 
 /**
@@ -11,14 +10,14 @@ import java.util.ArrayList;
  * getProgram() returns a dummy program synthesised for display purposes by adding all of
  * the actors from all of the games together.
  *
- * programs all share the same geometry 
+ * programs all share the same geometry
  *
  *
  *
  * handling display
  *
  * handling update
- * 
+ *
  *
  *
  */
@@ -26,20 +25,19 @@ public class TPSimultaneousPlatform extends TPPlatform {
 
     private TPGeometry geom;
     private ArrayList<TPProgram> programs = new ArrayList<>();
-    private TPSPProgram tpspProg;
+    private TPSPProgram synthesisProg;
 
     public TPSimultaneousPlatform(String name, TPGeometry geom) {
         super(name);
         this.geom = geom;
         resetSynthesisProgram();
     }
-    
+
     protected void resetSynthesisProgram() {
-        // TPProgram prog = new TPProgram("synthesis program");
-        tpspProg = new TPSPProgram("synthesis program");
-        tpspProg.setGeometry(geom);
-        tpspProg.setSmearMode(true);
-        setProgram(tpspProg);
+        synthesisProg = new TPSPProgram("synthesis program");
+        synthesisProg.setGeometry(geom);
+        synthesisProg.setSmearMode(true);
+        setProgram(synthesisProg);
     }
 
     public boolean isSmearMode() {
@@ -64,7 +62,16 @@ public class TPSimultaneousPlatform extends TPPlatform {
             getProgram().addActor(prog.getActor(i));
 
         getProgram().updateActorsInPlace();
+    }
 
+    public void updateActorsAllPrograms() {
+        // remove existing actors
+        for (TPActor a : synthesisProg)
+            synthesisProg.removeActor(a);
+        for (TPProgram p : programs)
+            for (TPActor a : p)
+                synthesisProg.addActor(a);
+        synthesisProg.updateActorsInPlace();
     }
 
     /**
@@ -88,11 +95,6 @@ public class TPSimultaneousPlatform extends TPPlatform {
         return programs.get(i);
     }
 
-    // @Override
-    // public TPProgram getProgram() {
-    //     return super.getProgram();
-    // }
-
     private class TPSPProgram extends TPProgram {
 
         public TPSPProgram(String title) {
@@ -101,13 +103,10 @@ public class TPSimultaneousPlatform extends TPPlatform {
 
         @Override
         public void update() {
-            
             for (TPProgram prog : programs)
                 prog.update();
-
             updateActorsInPlace();
         }
-        
     }
 
 }

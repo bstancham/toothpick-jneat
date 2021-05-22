@@ -9,7 +9,13 @@ import jneat.neat.Organism;
 
 public class TPTrainingPlatform extends TPSimultaneousPlatform {
 
-    public enum Mode { READY_TO_TRAIN, TRAINING, TRAINING_ENDED, RE_RUN };
+    public enum Mode {
+        READY_TO_TRAIN,
+        TRAINING,
+        TRAINING_ENDED,
+        READY_TO_RERUN,
+        RERUN
+    };
 
     private Mode mode = Mode.READY_TO_TRAIN;
 
@@ -19,7 +25,7 @@ public class TPTrainingPlatform extends TPSimultaneousPlatform {
     private Generation genPanel = null;
     private Generation.EpochParams ep = null;
 
-    private int counter = 0;
+    private int counter = 1;
     private int generationCounter = 1;
 
     private boolean initialised = false;
@@ -41,6 +47,28 @@ public class TPTrainingPlatform extends TPSimultaneousPlatform {
     }
 
     public Mode getMode() { return mode; }
+
+    public void initRerun() {
+        System.out.println("TPTrainingPlatform.initRerun()");
+        mode = Mode.READY_TO_RERUN;
+        resetGeneration();
+    }
+
+    public void cancelRerun() {
+        System.out.println("TPTrainingPlatform.cancelRerun()");
+        mode = Mode.TRAINING;
+        resetGeneration();
+    }
+
+    private void resetGeneration() {
+        for (TPOrganism tpo : ttParams.organisms)
+            tpo.resetPosition();
+        updateActorsAllPrograms();
+        // turn off smear-mode (just for first iteration)
+        savedSmearMode = isSmearMode();
+        setSmearMode(false);
+        counter = 1;
+    }
 
     public ToothpickTrainingParams getParams() { return ttParams; }
 
@@ -79,11 +107,14 @@ public class TPTrainingPlatform extends TPSimultaneousPlatform {
         // initGeneration(ep);
         initGeneration();
 
-        counter = 0;
+        counter = 1;
+        generationCounter = 1;
         initialised = true;
         finished = false;
         fittestTPOrganism = null;
         greatestFitness = 0;
+
+        mode = Mode.READY_TO_TRAIN;
     }
 
     // private void initGeneration(Generation.EpochParams ep) {
@@ -94,13 +125,7 @@ public class TPTrainingPlatform extends TPSimultaneousPlatform {
             addProgram(ttParams.getTPOrganism(i).program);
         }
         generationFirstWinner = null;
-        savedSmearMode = isSmearMode();
-        setSmearMode(false);
-    }
-
-    public void resetGeneration() {
-        resetAllPrograms();
-        counter = 0;
+        // turn off smear-mode (just for first iteration)
         savedSmearMode = isSmearMode();
         setSmearMode(false);
     }
@@ -108,14 +133,22 @@ public class TPTrainingPlatform extends TPSimultaneousPlatform {
     @Override
     public void update() {
 
-        // if (initNeeded) {
-        //     initTraining();
-        //     initNeeded = false;
-        // }
-
-        mode = Mode.TRAINING;
+        if (mode == Mode.READY_TO_TRAIN) {
+            mode = Mode.TRAINING;
+        } else if (mode == Mode.READY_TO_RERUN) {
+            mode = Mode.RERUN;
+        }
 
         super.update();
+
+        if (mode == Mode.TRAINING) {
+            updateTRAINING();
+        } else if (mode == Mode.RERUN) {
+            updateRERUN();
+        }
+    }
+
+    private void updateTRAINING() {
 
         if (initialised && !finished) {
 
@@ -140,7 +173,6 @@ public class TPTrainingPlatform extends TPSimultaneousPlatform {
 
                 System.out.println("END OF GENERATION (" + generationCounter + ")");
 
-                // if (generationCounter >= EnvConstant.NUMBER_OF_EPOCH) {
                 if (generationCounter >= ttParams.numEpoch) {
                     System.out.println("END OF TRAINING");
                     System.out.println("... greatest fitness = " + greatestFitness
@@ -168,10 +200,16 @@ public class TPTrainingPlatform extends TPSimultaneousPlatform {
                     initGeneration();
 
                     generationCounter++;
-                    counter = 0;
+                    counter = 1;
                 }
             }
         }
+    }
+
+    private void updateRERUN() {
+        if (counter == 1)
+            setSmearMode(savedSmearMode);
+        counter++;
     }
 
 }

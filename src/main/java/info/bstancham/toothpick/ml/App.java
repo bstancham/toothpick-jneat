@@ -290,73 +290,99 @@ public class App {
 
     private TPMenu makeTrainingPlatformMenu(TPTrainingPlatform platform) {
         TPMenu m = new TPMenu("TRAINING PLATFORM (" + platform.getTitle() + ")");
-        m.setInitAction(() -> {
-                System.out.println("trianing-platform-menu --> init-action");
-                if (neatGui == null)
-                    neatGui = MainGui.launchGui();
-
-                neatGui.setToothpickTrainingParams(platform.getParams());
-                // EnvConstant.TOOTHPICK_TRAINING_PARAMS = platform.getParams();
-
-                // write jneat params & session params
-                neatGui.loadJneatParameters(getResourcePath("toothpick-neat-params"));
-                neatGui.writeJneatParameters();
-                neatGui.showAndWriteSessionParameters(platform.getParams().makeSessionParams());
-
-                // bring the "start simulation" panel to the front and select "graph champion"
-                // from the radio buttons
-                neatGui.showGenerationPanel();
-                neatGui.selectOptionGraphChampion();
-
-                // doing this before initTraining seems to sometimes create some exceptions relating to the GUI...
-                // ... init params before initTraining, so that mobile-target will take effect in first iteration
-                // ... otherwise, mobile target won't take effect till initGeneration is called in second gen
-                platform.getParams().init();
-
-                platform.initTraining(neatGui);
-                base.setPlatform(platform);
-
-                // used in creating champ-match
-                currentTrainingPlatform = platform;
-            });
-        // m.add(new TPMenuItemSimple(() -> "RUN (" + platform.getParams().numEpoch + " generations)",
-        //                            () -> base.hideMenu()));
-        // m.add(new TPMenuItemSimple(this::runButtonText, this::runButtonAction));
+        m.setInitAction(() -> resetExperiment(platform));
         m.add(new TPMenuItemSimple(() -> runButtonText(platform), () -> runButtonAction(platform)));
         m.add(new TPMenuItemBool("smear-mode: ",
                                  platform::isSmearMode,
                                  platform::setSmearMode));
-        m.add(new TPMenuItemSimple("re-run current generation", () -> platform.resetGeneration()));
+        m.add(new TPMenuItemSimple(() -> rerunButtonText(platform), () -> rerunButtonAction(platform)));
         m.add(makeProgMenu("play against current champion", makeProgChampMatch(platform)));
+        m.add(new TPMenuItemSimple("reset experiment", () -> resetExperiment(platform)));
         return m;
     }
 
+    private void resetExperiment(TPTrainingPlatform platform) {
+        System.out.println("reset experiment --> TPTrainingPlatform: " + platform.getTitle());
+
+        if (neatGui == null)
+            neatGui = MainGui.launchGui();
+
+        neatGui.setToothpickTrainingParams(platform.getParams());
+        // EnvConstant.TOOTHPICK_TRAINING_PARAMS = platform.getParams();
+
+        // write jneat params & session params
+        neatGui.loadJneatParameters(getResourcePath("toothpick-neat-params"));
+        neatGui.writeJneatParameters();
+        neatGui.showAndWriteSessionParameters(platform.getParams().makeSessionParams());
+
+        // bring the "start simulation" panel to the front and select "graph champion"
+        // from the radio buttons
+        neatGui.showGenerationPanel();
+        neatGui.selectOptionGraphChampion();
+
+        // doing this before initTraining seems to sometimes create some exceptions relating to the GUI...
+        // ... init params before initTraining, so that mobile-target will take effect in first iteration
+        // ... otherwise, mobile target won't take effect till initGeneration is called in second gen
+        platform.getParams().init();
+
+        platform.initTraining(neatGui);
+        base.setPlatform(platform);
+
+        // used in creating champ-match
+        currentTrainingPlatform = platform;
+    }
+
     private String runButtonText(TPTrainingPlatform platform) {
-        if (platform.getMode() == Mode.READY_TO_TRAIN)
+        Mode m = platform.getMode();
+        if (m == Mode.READY_TO_TRAIN)
             return "START TRAINING (" + platform.getParams().numEpoch + " generations of "
                 + platform.getParams().iterationsPerGeneration + " iterations)";
-        else if (platform.getMode() == Mode.TRAINING)
-            return "CONTINUE TRAINING (gen " + platform.getCurrentGeneration() + " of " + platform.getParams().numEpoch + " | iter "
-                + platform.getCurrentIteration() + " of " + platform.getParams().iterationsPerGeneration + ")";
-        else if (platform.getMode() == Mode.TRAINING_ENDED)
+        else if (m == Mode.TRAINING)
+            return "CONTINUE TRAINING (gen " + platform.getCurrentGeneration() + " of "
+                + platform.getParams().numEpoch + " | iter "
+                + platform.getCurrentIteration() + " of "
+                + platform.getParams().iterationsPerGeneration + ")";
+        else if (m == Mode.TRAINING_ENDED)
             return "CONTINUE RUNNING (training ended after "
                 + platform.getParams().numEpoch + " generations of "
                 + platform.getParams().iterationsPerGeneration + " iterations)";
-        else if (platform.getMode() == Mode.RE_RUN)
-            return "START RE-RUN";
+        else if (m == Mode.READY_TO_RERUN)
+            return "START RE-RUN (generation " + platform.getCurrentGeneration() + ")";
+        else if (m == Mode.RERUN)
+            return "CONTINUE RE-RUN (gen " + platform.getCurrentGeneration() + " | iter "
+                + platform.getCurrentIteration() + ")";
         else
-            return "ERROR - TPTrainingPlatform - Mode not recognised!";
+            return "ERROR! TPTrainingPlatform.Mode " + m + " not recognised!";
     }
 
     private void runButtonAction(TPTrainingPlatform platform) {
-        if (platform.getMode() == TPTrainingPlatform.Mode.READY_TO_TRAIN) {
-            base.hideMenu();
-        } else if (platform.getMode() == TPTrainingPlatform.Mode.TRAINING) {
-            base.hideMenu();
-        } else if (platform.getMode() == TPTrainingPlatform.Mode.RE_RUN) {
-            System.out.println("ERROR! start-re-run not yet implemented!");
+        base.setPlatform(platform);
+        base.hideMenu();
+    }
+
+    private String rerunButtonText(TPTrainingPlatform platform) {
+        Mode m = platform.getMode();
+        if (m == Mode.READY_TO_TRAIN) {
+            return "can't re-run - training has not started";
+        } else if (m == Mode.TRAINING || m == Mode.TRAINING_ENDED) {
+            return "re-run current generation";
+        } else if (m == Mode.READY_TO_RERUN || m == Mode.RERUN) {
+            return "return to training";
         } else {
-            System.out.println("ERROR - TPTrainingPlatform - Mode not recognised! (ACTION)");
+            return "ERROR! TPTrainingPlatform.Mode " + m + " not recognised!";
+        }
+    }
+
+    private void rerunButtonAction(TPTrainingPlatform platform) {
+        Mode m = platform.getMode();
+        if (m == Mode.READY_TO_TRAIN) {
+            return;
+        } else if (m == Mode.TRAINING || m == Mode.TRAINING_ENDED) {
+            platform.initRerun();
+        } else if (m == Mode.READY_TO_RERUN || m == Mode.RERUN) {
+            platform.cancelRerun();
+        } else {
+            System.out.println("ERROR! TPTrainingPlatform.Mode " + m + " not recognised!");
         }
     }
 

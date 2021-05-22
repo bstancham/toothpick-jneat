@@ -2,6 +2,8 @@ package info.bstancham.toothpick.ml;
 
 import info.bschambers.toothpick.TPProgram;
 import info.bschambers.toothpick.actor.*;
+import java.util.ArrayList;
+import java.util.List;
 import jneat.neat.Organism;
 
 public class TPOrganism {
@@ -10,16 +12,18 @@ public class TPOrganism {
     public NeuralNetworkController controller = null;
     public TPProgram program = null;
     private ToothpickFitness fitFunc;
+    private List<TPActor> initActors = new ArrayList<>();
 
     public TPOrganism(Organism org, TPProgram prog,
                       NeuralNetworkController controller, ToothpickFitness fitFunc) {
         this.org = org;
-        this.program = prog;
+        program = prog;
         this.controller = controller;
         this.fitFunc = fitFunc;
         controller.setNetwork(org.net);
-        TPActor a = MLUtil.getHorizActor(program);
-        a.addBehaviour(controller);
+        getActor().addBehaviour(controller);
+        for (TPActor a : program)
+            initActors.add(a.copy());
     }
 
     public boolean isWinner() { return org.winner; }
@@ -38,6 +42,18 @@ public class TPOrganism {
     public void setDebugMode(boolean val) {
         if (controller != null)
             controller.setDebugMode(val);
+    }
+
+    /**
+     * Resets all actors in program to initial starting positions. Used by
+     * TPTrainingPlatform to facilitate re-running the generation.
+     */
+    public void resetPosition() {
+        for (TPActor a : program)
+            program.removeActor(a);
+        for (TPActor a : initActors)
+            program.addActor(a.copy());
+        program.updateActorsInPlace();
     }
 
 }
