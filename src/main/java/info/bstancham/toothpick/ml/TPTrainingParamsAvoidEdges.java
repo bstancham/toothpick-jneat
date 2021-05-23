@@ -31,7 +31,7 @@ import jneat.neat.Organism;
 public class TPTrainingParamsAvoidEdges extends ToothpickTrainingParams {
 
     public TPTrainingParamsAvoidEdges(TPBase base) {
-        super(base, "Avoid-Edges", "genome_toothpick_4_4");
+        super(base, "Avoid-Edges", "genome_in4_out4");
     }
 
     /** WARNING! Returns null if actor with name {@link PROTAGONIST_NAME} does not exist. */

@@ -220,7 +220,8 @@ public class App {
     private void trainLogicGate(String label, String targetDataFile) {
         MainGui gui = MainGui.launchGui();
 
-        gui.loadJneatParameters(getResourcePath("standard-neat-params"));
+        EnvConstant.RESOURCE_DIR = "resources";
+        gui.loadJneatParameters(getResourcePath("default-neat-params"));
         gui.writeJneatParameters();
 
         String sessionParams = ""
@@ -231,7 +232,7 @@ public class App {
             + "data_target                  " + targetDataFile + "\n"
             + "class_compute_fitness        jneat.misc.LogicGateFit\n"
             + "start_from_genome            Y\n"
-            + "genome_file                  genome\n"
+            + "genome_file                  genome_in2_out1\n"
             + ";start_from_random_population Y\n"
             + ";start_from_old_population    Y\n"
             + "population_file              primitive\n"
@@ -259,6 +260,7 @@ public class App {
         m.add(new TPMenuItemSimple("Test platform (no training)", () -> System.out.println("... todo...")));
         m.add(makeMenuTPTraining(new TPTrainingParamsPointAt(base)));
         m.add(makeMenuTPTraining(new TPTrainingParamsSeek(base)));
+        m.add(makeMenuTPTraining(new TPTrainingParamsSeekIn6Out4(base)));
         m.add(makeMenuTPTraining(new TPTrainingParamsAvoidEdges(base)));
         return m;
     }
@@ -396,7 +398,7 @@ public class App {
         TPProgram prog = new TPProgram("play against current champion");
         ChampMatchSetup champSetup = new ChampMatchSetup();
         prog.addResetBehaviour(champSetup);
-        prog.setSmearMode(true);
+        // prog.setSmearMode(true);
         prog.init();
         prog.setResetSnapshot();
         // make champ-match menu
@@ -503,7 +505,8 @@ public class App {
     }
 
     private String getResourcePath(String resourceName) {
-        String resourcesPath = "resources/main";
+        // String resourcesPath = "resources/main";
+        String resourcesPath = EnvConstant.RESOURCE_DIR;
         return new File(resourcesPath + "/" + resourceName).getAbsolutePath();
     }
 

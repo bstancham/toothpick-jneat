@@ -38,6 +38,8 @@ public class EnvConstant {
 
     // character for composing full dsn : is a separator for this system
 
+    public static String RESOURCE_DIR = "resources";
+
     public static String OS_FILE_SEP = "\\";
 
     // name of GENOME 1

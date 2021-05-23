@@ -28,7 +28,7 @@ import jneat.neat.Organism;
 public class TPTrainingParamsPointAt extends ToothpickTrainingParams {
 
     public TPTrainingParamsPointAt(TPBase base) {
-        super(base, "Point-At", "genome_toothpick_3_2_connected");
+        super(base, "Point-At", "genome_in3_out2");
     }
 
     @Override

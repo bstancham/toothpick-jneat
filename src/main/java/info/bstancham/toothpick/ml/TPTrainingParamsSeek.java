@@ -30,11 +30,15 @@ import jneat.neat.Organism;
  */
 public class TPTrainingParamsSeek extends ToothpickTrainingParams {
 
-    private double inputScalingDistance = 0.1;
-    private double inputScalingInertia = 10;
+    protected double inputScalingDistance = 0.01;
+    protected double inputScalingInertia = 10;
 
     public TPTrainingParamsSeek(TPBase base) {
-        super(base, "Seek", "genome_toothpick_4_4");
+        this(base, "Seek", "genome_in4_out4");
+    }
+
+    public TPTrainingParamsSeek(TPBase base, String label, String genomeFilename) {
+        super(base, label, genomeFilename);
     }
 
     @Override
@@ -66,7 +70,7 @@ public class TPTrainingParamsSeek extends ToothpickTrainingParams {
         return nnc;
     }
 
-    private void addInputs(NeuralNetworkController nnc) {
+    protected void addInputs(NeuralNetworkController nnc) {
 
         // (target) relative position, x
         nnc.addInput((TPProgram prog) -> {
@@ -74,8 +78,7 @@ public class TPTrainingParamsSeek extends ToothpickTrainingParams {
                 TPActor target = MLUtil.getVertActor(prog);
                 if (self == null || target == null)
                     return 0;
-                double dist = target.x - self.x;
-                return dist * inputScalingDistance;
+                return getGeometry().xDistWrapped(self.x, target.x) * inputScalingDistance;
             });
 
         // (target) relative position, y
@@ -84,8 +87,7 @@ public class TPTrainingParamsSeek extends ToothpickTrainingParams {
                 TPActor target = MLUtil.getVertActor(prog);
                 if (self == null || target == null)
                     return 0;
-                double dist = target.y - self.y;
-                return dist * inputScalingDistance;
+                return getGeometry().yDistWrapped(self.y, target.y) * inputScalingDistance;
             });
 
         // (self) inertia, x

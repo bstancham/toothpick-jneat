@@ -19,7 +19,6 @@ public class Grafi extends JPanel implements ActionListener, ListSelectionListen
     private JFrame f1;
     public JPanel pmain;
    
-   
     JPanel p2; // pannello comandi
     JPanel p3; // pannello grafico
    
@@ -31,7 +30,6 @@ public class Grafi extends JPanel implements ActionListener, ListSelectionListen
     // run the network....
     JButton b4; 
 
-	  
     JButton b5;
    
     Vector listdata;
@@ -44,14 +42,12 @@ public class Grafi extends JPanel implements ActionListener, ListSelectionListen
     int quadro_y;
     Population Popx;		
 
-	  
     Genome GxView;
 	   
     JTextArea textArea;
    
     Container contentPane;
-    protected HistoryLog   logger;
-   
+    protected HistoryLog logger;
    
     ButtonGroup ck_group;
     JRadioButton ck1;
@@ -61,13 +57,7 @@ public class Grafi extends JPanel implements ActionListener, ListSelectionListen
     JRadioButton ck_tipo_normal;
     JRadioButton ck_tipo_spessore;
    
-   
-   
-    /**
-     * 
-     */
-    public Grafi(JFrame _f) 
-    {
+    public Grafi(JFrame _f) {
 	  
         GridBagLayout gbl;
         GridBagConstraints limiti;
@@ -76,7 +66,6 @@ public class Grafi extends JPanel implements ActionListener, ListSelectionListen
 
         GxView = null;
 
-		 
         f1 = _f;
 	  
         quadro_x = 450;
@@ -87,10 +76,8 @@ public class Grafi extends JPanel implements ActionListener, ListSelectionListen
         p3 = new JPanel();
         p3.setLayout(new BorderLayout());
 
-        //		       p3.setLayout(new GridLayout(1,1));
-
+        // p3.setLayout(new GridLayout(1,1));
 		 
-	  
         /*		 p5 = new JPanel();
                          p5.setLayout(new BorderLayout());
         */ 
@@ -327,26 +314,11 @@ public class Grafi extends JPanel implements ActionListener, ListSelectionListen
         EnvConstant.OS_VERSION = System.getProperty("os.version");
         EnvConstant.JNEAT_DIR = System.getProperty("user.dir");
         EnvConstant.OS_FILE_SEP = System.getProperty("file.separator");
-	  
     }
    
-   
-   
-   
-   
-   
-    public void setLog(HistoryLog _log) 
-    {
+    public void setLog(HistoryLog _log) {
         logger = _log;
     }                          
-   
-   
-   
-   
-   
-   
-   
-   
    
     /**
      * Starts the application.
@@ -357,9 +329,7 @@ public class Grafi extends JPanel implements ActionListener, ListSelectionListen
         JFrame jp = null;
         Grafi pn1 = null;
 	  
-	  
-        try 
-            {
+        try {
                 jp = new JFrame("  n e a t    view graph of genomes ");
                 pn1 = new Grafi(jp); 
 		 

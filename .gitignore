@@ -9,3 +9,7 @@ build
 
 # Ignore backup files
 *~
+
+# ignore most of the files in the data directory
+data/generation*
+data/xwinner*

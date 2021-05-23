@@ -50,7 +50,7 @@ public abstract class ToothpickTrainingParams {
      * for each Organism. Therefore, reset-behaviours can be used to make any random
      * changes to the shared starting conditions for each generation.</p>
      */
-    private TPProgram masterProg;
+    protected TPProgram masterProg;
 
     private ToothpickFitness masterFitness;
 
