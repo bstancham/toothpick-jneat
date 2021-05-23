@@ -36,15 +36,19 @@ public class TPTrainingPlatform extends TPSimultaneousPlatform {
 
     private int fitListMaxSize = 5;
     private List<TPOrganism> fitList = new ArrayList<>();
-
+    private TPOrganism.FitnessComparator fitComp = new TPOrganism.FitnessComparator();
+    
     private boolean savedSmearMode = true;
 
     private boolean initNeeded = true;
+
+    public int numRetainForRerun;
 
     public TPTrainingPlatform(ToothpickTrainingParams ttParams, TPBase base) {
         super(ttParams.label, ttParams.getGeometry());
         this.ttParams = ttParams;
         this.base = base;
+        numRetainForRerun = ttParams.numTPOrganisms();
     }
 
     public Mode getMode() { return mode; }

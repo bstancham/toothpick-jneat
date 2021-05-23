@@ -1,7 +1,6 @@
 package jneat.gui;
 
 import info.bschambers.toothpick.TPGeometry;
-import info.bstancham.toothpick.ml.ToothpickTrainingRunner;
 import info.bstancham.toothpick.ml.ToothpickTrainingParams;
 import java.awt.*;
 import java.awt.event.*;
@@ -92,7 +91,6 @@ public class Generation extends JPanel implements ActionListener, ItemListener {
     private int u_max_unit = 0;
     private int u_inp_unit = 0;
     private int u_out_unit = 0;
-    private ToothpickTrainingRunner runner = null;
     private ToothpickTrainingParams ttParams = null;
 
 
@@ -374,7 +372,7 @@ public class Generation extends JPanel implements ActionListener, ItemListener {
     public void startProcess() {
         logInfoBeforeStart();
         startNeat();
-        logInfoAfterEnd();
+        // logInfoAfterEnd();
     }
     
     public void logInfoBeforeStart() {
@@ -430,21 +428,6 @@ public class Generation extends JPanel implements ActionListener, ItemListener {
         } catch (Throwable e) {
             logger.sendToLog(" generation: error during generation.startProcess() :" + e);
         }
-    }
-            
-    // startNeat();
-
-    public void logInfoAfterEnd() {
-        try {
-            if (EnvConstant.TYPE_OF_SIMULATION == EnvConstant.SIMULATION_FROM_TOOTHPICK) {
-                ToothpickTrainingRunner runner = EnvConstant.TOOTHPICK_TRAINING_RUNNER;
-                ToothpickTrainingParams ttParams = runner.getParams();
-                System.out.println("FITTEST TOOTHPICK: " + runner.getFittestTPOrganism());
-            }
-        } catch (Throwable e1) {
-            logger.sendToLog(" generation: error during generation.startProcess() :"+e1);
-        }
-        msg("Generation.startProcess() --- END");
     }
 
     public void startProcessAsync() {
@@ -737,27 +720,19 @@ public class Generation extends JPanel implements ActionListener, ItemListener {
             
             if (EnvConstant.TYPE_OF_SIMULATION == EnvConstant.SIMULATION_FROM_TOOTHPICK) {
 
-                runner = EnvConstant.TOOTHPICK_TRAINING_RUNNER;
                 ttParams = EnvConstant.TOOTHPICK_TRAINING_PARAMS;
-            
-                if (runner != null) {
-                    logger.sendToLog(" generation: ToothpickTrainingRunner --> " + runner);
-                    u_neat.p_pop_size = runner.getParams().populationSize;
-                    runner.show();
 
-                } else if (ttParams != null) {
+                if (ttParams == null) {
+                    System.out.println("PARAMS is NULL!");
+                } else {
                     logger.sendToLog(" generation: ToothpickTrainingParams --> " + ttParams);
                     u_neat.p_pop_size = ttParams.populationSize;
-
-                } else {
-                    System.out.println("RUNNER and PARAMS are both NULL!");
                 }
                 
                 logger.sendToLog(" generation: override population-size from params --> "
                                  + u_neat.p_pop_size);
                 
             }
-
 
         } catch (Throwable e) {
             logger.sendToLog(" error in generation.startNeat_START() " + e);
@@ -783,20 +758,8 @@ public class Generation extends JPanel implements ActionListener, ItemListener {
                     // curr_name_pop_specie =  EnvConstant.PREFIX_SPECIES_FILE + fmt5.format(gen);
                     ep.curr_name_pop_specie = EnvConstant.PREFIX_SPECIES_FILE;
                     EnvConstant.SUPER_WINNER_ = false;
-
-                    if (EnvConstant.TYPE_OF_SIMULATION == EnvConstant.SIMULATION_FROM_TOOTHPICK) {
-                        System.out.println("runner=" + runner + " - gen=" + ep.gen);
-                        runner.setTitle("Toothpick Training Runner: generation " + ep.gen);
-
-                        // epochForToothpick(u_neat, u_pop, gen, curr_name_pop_specie, runner);
-                        epochForToothpick(ep, runner);
-
-                    } else {
-
-                        // epoch(u_neat, u_pop, gen, curr_name_pop_specie);
-                        epoch(ep);
-
-                    }
+                    
+                    epoch(ep);
 
                     logger.sendToStatus(" running generation -> " + ep.gen);
 
@@ -818,11 +781,7 @@ public class Generation extends JPanel implements ActionListener, ItemListener {
         logger.sendToLog(" generation:      spawning population ...");
 
         System.out.println(ep.infoString());
-
         System.out.println("u_genome = " + u_genome); 
-
-        ///// !!!!!!! OMG!
-        // u_genome = "genome_toothpick_4_4";
         
         if ((EnvConstant.TYPE_OF_START == EnvConstant.START_FROM_GENOME) &&  (!EnvConstant.FORCE_RESTART))
             ep.pop = new Population(u_genome, ep.neat.p_pop_size);
@@ -844,11 +803,6 @@ public class Generation extends JPanel implements ActionListener, ItemListener {
             ep.pop.print_to_file_by_species(EnvRoutine.getJneatFileData(EnvConstant.NAME_CURR_POPULATION));
             logger.sendToLog(" generation:      saved curr pop file "+EnvRoutine.getJneatFileData(EnvConstant.NAME_CURR_POPULATION));
             logger.sendToLog(" generation:  READY for other request");
-
-            if (EnvConstant.TYPE_OF_SIMULATION == EnvConstant.SIMULATION_FROM_TOOTHPICK) {
-                // stop the game from running
-                runner.pause();
-            }
 
         } catch (Throwable e) {
             logger.sendToLog(" error in generation.startNeat_END() " + e);
@@ -1390,28 +1344,10 @@ public class Generation extends JPanel implements ActionListener, ItemListener {
         }
     }
 
-    // public boolean epochForToothpick(Neat _neat, Population pop, int generation, String filename,
-    //                                  ToothpickTrainingRunner runner) {
-    public boolean epochForToothpick(EpochParams ep, ToothpickTrainingRunner runner) {
-        msg("Generation.epochForToothpick() --- START");
-        runEpochForToothpick(ep, runner);
-        // return afterEpochForToothpick(ep, runner);
-        return afterEpochForToothpick(ep, runner.getGenerationFirstWinner());
-    }
-    
-    public void runEpochForToothpick(EpochParams ep, ToothpickTrainingRunner runner) {
-        // EVALUATE EACH ORGANISM
-        // run all simultaneously, so we can have a nice visualisation
-        System.out.println("GENERATION " + ep.gen + ": evaluate organisms");
-        runner.evaluateGeneration(ep.pop);
-    }
-
-    // public boolean afterEpochForToothpick(EpochParams ep, ToothpickTrainingRunner runner) {
     public boolean afterEpochForToothpick(EpochParams ep, Organism generationFirstWinner) {
 
         String winner_prefix = EnvConstant.PREFIX_WINNER_FILE;
         String riga1 = null; // line
-        // boolean esito = false; // outcome
         boolean win = false;
         Genome _genome_win = null;
 
@@ -1426,14 +1362,8 @@ public class Generation extends JPanel implements ActionListener, ItemListener {
 
         try {
 
-            // // EVALUATE EACH ORGANISM
-            // // run all simultaneously, so we can have a nice visualisation
-            // System.out.println("GENERATION " + ep.gen + ": evaluate organisms");
-            // runner.evaluateGeneration(ep.pop);
-
             // FIND FIRST WINNER
             double max_fitness_of_winner = 0.0;
-            // Organism firstWinner = runner.getGenerationFirstWinner();
             Organism firstWinner = generationFirstWinner;
 
             if (firstWinner != null) {
@@ -1452,8 +1382,6 @@ public class Generation extends JPanel implements ActionListener, ItemListener {
                     // System.out.print("\n okay flagged first *****");
                 }
             }
-
-
 
             //compute average and max fitness for each species
             Iterator itr_specie = ep.pop.species.iterator();
@@ -1513,7 +1441,6 @@ public class Generation extends JPanel implements ActionListener, ItemListener {
             }
 
             // wait an epoch and make a reproduction of the best species
-            //
 
             ep.pop.epoch(ep.gen);
 

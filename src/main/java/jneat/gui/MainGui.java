@@ -1,7 +1,6 @@
 package jneat.gui;
 
 import info.bstancham.toothpick.ml.ToothpickTrainingParams;
-import info.bstancham.toothpick.ml.ToothpickTrainingRunner;
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
@@ -209,10 +208,6 @@ public class MainGui extends JPanel {
 
     public void setToothpickTrainingParams(ToothpickTrainingParams params) {
         EnvConstant.TOOTHPICK_TRAINING_PARAMS = params;
-    }
-
-    public void setToothpickTrainingRunner(ToothpickTrainingRunner runner) {
-        EnvConstant.TOOTHPICK_TRAINING_RUNNER = runner;
     }
 
     public Generation getGenerationPanel() { return a_generation; }

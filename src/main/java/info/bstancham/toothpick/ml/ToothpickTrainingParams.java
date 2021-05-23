@@ -62,7 +62,6 @@ public abstract class ToothpickTrainingParams {
         this.genomeFilename = genomeFilename;
         masterProg = makeMasterProgram();
         masterFitness = makeFitness();
-        // masterController = makeController();
     }
 
     public void init() {
@@ -107,23 +106,6 @@ public abstract class ToothpickTrainingParams {
                                           makeController(), masterFitness.copy());
         return tpOrg;
     }
-
-    // /**
-    //  * <p>Get the fittest actor from the whole training session.</p>
-    //  *
-    //  * <p>WARNING! will be null if training session has not ended properly yet - may be
-    //  * null anyway!</p>
-    //  */
-    // public TPOrganism getTheBestOne() {
-    //     return theBestOne;
-    // }
-
-    // /**
-    //  * ToothpickTrainingRunner uses this...
-    //  */
-    // public void setTheBestOne(TPOrganism a) {
-    //     theBestOne = a;
-    // }
 
     public String makeSessionParams() {
         return ""

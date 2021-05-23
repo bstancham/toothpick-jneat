@@ -3,6 +3,7 @@ package info.bstancham.toothpick.ml;
 import info.bschambers.toothpick.TPProgram;
 import info.bschambers.toothpick.actor.*;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import jneat.neat.Organism;
 
@@ -54,6 +55,17 @@ public class TPOrganism {
         for (TPActor a : initActors)
             program.addActor(a.copy());
         program.updateActorsInPlace();
+    }
+
+    public static class FitnessComparator implements Comparator<TPOrganism> {
+        @Override
+        public int compare(TPOrganism tpOrgA, TPOrganism tpOrgB) {
+            double a = tpOrgA.org.getFitness();
+            double b = tpOrgB.org.getFitness();
+            if (a < b) return -1;
+            if (a > b) return 1;
+            return 0;
+        }
     }
 
 }

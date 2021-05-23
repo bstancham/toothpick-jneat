@@ -266,13 +266,7 @@ public class App {
     }
 
     private TPMenu makeMenuTPTraining(ToothpickTrainingParams ttParams) {
-        ToothpickTrainingRunner runner = new ToothpickTrainingRunner(ttParams);
         TPMenu m = new TPMenu("train " + ttParams.label);
-        // m.add(new TPMenuItemSimple("START TRAINING", () -> trainToothpicks(runner)));
-        // m.add(new TPMenuItemSimple("START TRAINING (NEW VERSION)",
-        //                            () -> trainToothpicksNEW(new TPTrainingRunner(runner.getParams()))));
-        // m.add(new TPMenuItemSimple("START TRAINING (NEW SIMULTANEOUS PLATFORM VERSION)",
-        //                            () -> trainToothpicksSP(ttParams)));
         m.add(makeTrainingPlatformMenu(makeTrainingPlatform(ttParams)));
         m.add(new TPMenuItemIncr("num epochs: ", () -> "" + ttParams.numEpoch,
                                  () -> incrNumEpoch(ttParams, -1),
