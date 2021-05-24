@@ -287,6 +287,15 @@ public class App {
         TPMenu m = new TPMenu("TRAINING PLATFORM (" + platform.getTitle() + ")");
         m.setInitAction(() -> resetExperiment(platform));
         m.add(new TPMenuItemSimple(() -> runButtonText(platform), () -> runButtonAction(platform)));
+        m.add(new TPMenuItemSimple(() -> "extend training by " + platform.getNumGensExtend() + " generations",
+                                   () -> {
+                                       System.out.println("EXTEND");
+                                       platform.extendTraining();
+        }));
+        m.add(new TPMenuItemIncr("(extend training) for N generations: ",
+                                 () -> "" + platform.getNumGensExtend(),
+                                 () -> incrNumGensExtend(platform, -1),
+                                 () -> incrNumGensExtend(platform, 1)));
         m.add(new TPMenuItemBool("smear-mode: ",
                                  platform::isSmearMode,
                                  platform::setSmearMode));
@@ -297,6 +306,12 @@ public class App {
         m.add(makeChampMatchMenu(platform));
         m.add(new TPMenuItemSimple("RESET EXPERIMENT!", () -> resetExperiment(platform)));
         return m;
+    }
+
+    private void incrNumGensExtend(TPTrainingPlatform platform, int amt) {
+        platform.numGensExtend += amt;
+        if (platform.numGensExtend < 1)
+            platform.numGensExtend = 1;
     }
 
     private void incrRetainForRerun(TPTrainingPlatform platform, int amt) {
@@ -341,16 +356,16 @@ public class App {
     private String runButtonText(TPTrainingPlatform platform) {
         Mode m = platform.getMode();
         if (m == Mode.READY_TO_TRAIN)
-            return "START TRAINING (" + platform.getParams().numEpoch + " generations of "
+            return "START TRAINING (" + platform.getNumEpoch() + " generations of "
                 + platform.getParams().iterationsPerGeneration + " iterations)";
         else if (m == Mode.TRAINING)
             return "CONTINUE TRAINING (gen " + platform.getCurrentGeneration() + " of "
-                + platform.getParams().numEpoch + " | iter "
+                + platform.getNumEpoch() + " | iter "
                 + platform.getCurrentIteration() + " of "
                 + platform.getParams().iterationsPerGeneration + ")";
         else if (m == Mode.TRAINING_ENDED)
             return "CONTINUE RUNNING (training ended after "
-                + platform.getParams().numEpoch + " generations of "
+                + platform.getNumEpoch() + " generations of "
                 + platform.getParams().iterationsPerGeneration + " iterations)";
         else if (m == Mode.READY_TO_RERUN)
             return "START RE-RUN (generation " + platform.getCurrentGeneration() + ")";

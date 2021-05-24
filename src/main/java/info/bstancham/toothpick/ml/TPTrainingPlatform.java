@@ -43,6 +43,8 @@ public class TPTrainingPlatform extends TPSimultaneousPlatform {
     private boolean initNeeded = true;
 
     public int numRetainForRerun;
+    public int numGensExtend = 1;
+    private int extendedGenerations = 0;
 
     public TPTrainingPlatform(ToothpickTrainingParams ttParams, TPBase base) {
         super(ttParams.label, ttParams.getGeometry());
@@ -52,6 +54,18 @@ public class TPTrainingPlatform extends TPSimultaneousPlatform {
     }
 
     public Mode getMode() { return mode; }
+
+    public ToothpickTrainingParams getParams() { return ttParams; }
+
+    public int getNumEpoch() { return getParams().numEpoch + extendedGenerations; }
+
+    public List<TPOrganism> getFitList() { return fitList; }
+
+    public int getCurrentGeneration() { return generationCounter; }
+
+    public int getCurrentIteration() { return counter; }
+
+    public int getNumGensExtend() { return numGensExtend; }
 
     public void initRerun() {
         System.out.println("TPTrainingPlatform.initRerun()");
@@ -75,15 +89,17 @@ public class TPTrainingPlatform extends TPSimultaneousPlatform {
         counter = 1;
     }
 
-    public ToothpickTrainingParams getParams() { return ttParams; }
-
-    // public TPOrganism getFittestTPOrganism() { return fittestTPOrganism; }
-
-    public List<TPOrganism> getFitList() { return fitList; }
-
-    public int getCurrentGeneration() { return generationCounter; }
-
-    public int getCurrentIteration() { return counter; }
+    /**
+     * Extends training by {@link numGensExtend} generations.
+     */
+    public void extendTraining() {
+        extendedGenerations += numGensExtend;
+        if (generationCounter < getNumEpoch()) {
+            finished = false;
+            if (mode != Mode.READY_TO_TRAIN)
+                mode = Mode.TRAINING;
+        }
+    }
 
     public void initTraining(MainGui neatGui) {
         System.out.println("TPTrainingPlatform.initTraining()");
@@ -170,7 +186,7 @@ public class TPTrainingPlatform extends TPSimultaneousPlatform {
 
                 System.out.println("END OF GENERATION (" + generationCounter + ")");
 
-                if (generationCounter >= ttParams.numEpoch) {
+                if (generationCounter >= getNumEpoch()) {
                     System.out.println("END OF TRAINING");
                     printFitList();
                     // System.out.println("... greatest fitness = " + greatestFitness
