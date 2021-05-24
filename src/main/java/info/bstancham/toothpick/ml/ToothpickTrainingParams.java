@@ -178,4 +178,15 @@ public abstract class ToothpickTrainingParams {
         return prog;
     }
 
+    /**
+     * <p>Sorts the {@link organisms} list by fitness, with the fittest first.</p>
+     */
+    public void sortTPOrganismsByFitness() {
+        organisms.sort(new TPOrganism.FitnessComparator());
+        System.out.println("Sorted TPOrganisms by fitness:");
+        for (int i = 0; i < organisms.size(); i++)
+            System.out.println("... " + i + ": fitness=" + organisms.get(i).getFitness()
+                               + ", instance=" + organisms.get(i));
+    }
+
 }

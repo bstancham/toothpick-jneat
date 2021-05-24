@@ -42,7 +42,7 @@ public class TPTrainingPlatform extends TPSimultaneousPlatform {
 
     private boolean initNeeded = true;
 
-    public int numRetainForRerun;
+    public int numRetainForRerun = 5;
     public int numGensExtend = 1;
     private int extendedGenerations = 0;
 
@@ -70,7 +70,20 @@ public class TPTrainingPlatform extends TPSimultaneousPlatform {
     public void initRerun() {
         System.out.println("TPTrainingPlatform.initRerun()");
         mode = Mode.READY_TO_RERUN;
+        // sort by fitness BEFORE reset-generation
+        ttParams.sortTPOrganismsByFitness();
         resetGeneration();
+        // hide actors, except for the n fittest
+        int n = numRetainForRerun;
+        System.out.println("TPTrainingPlatform: hide selected programs...");
+        for (int i = 0; i < numPrograms(); i++) {
+            if (i >= numPrograms() - n) {
+                System.out.println("... " + i + ": KEEP (fitness=" + ttParams.getTPOrganism(i).getFitness() + ")");
+            } else {
+                System.out.println("... " + i + ": hide (fitness=" + ttParams.getTPOrganism(i).getFitness() + ")");
+                setVisible(i, false);
+            }
+        }
     }
 
     public void cancelRerun() {

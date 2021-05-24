@@ -95,6 +95,17 @@ public class TPSimultaneousPlatform extends TPPlatform {
         return programs.get(i);
     }
 
+    public void setVisible(int i, boolean val) {
+        TPProgram prog = programs.get(i);
+        for (TPActor a : prog) {
+            if (val) {
+                synthesisProg.addActor(a);
+            } else {
+                synthesisProg.removeActor(a);
+            }
+        }
+    }
+
     private class TPSPProgram extends TPProgram {
 
         public TPSPProgram(String title) {
