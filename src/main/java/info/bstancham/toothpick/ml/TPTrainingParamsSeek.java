@@ -43,16 +43,7 @@ public class TPTrainingParamsSeek extends ToothpickTrainingParams {
 
     @Override
     protected TPProgram makeMasterProgram() {
-        TPProgram prog = MLUtil.makeProgHorizVsVertNoCollision();
-        // set drone-actor to new random position at beginning of each generation
-        PBRandActorSetup randDroneSetup = new PBRandActorSetup();
-        randDroneSetup.setTarget(MLUtil.HORIZ_NAME, MLUtil.VERT_NAME);
-        randDroneSetup.initBoundsRightHandSide(prog.getGeometry());
-        if (targetIsMobile())
-            randDroneSetup.initInertia(-1, 1);
-        prog.addResetBehaviour(randDroneSetup);
-        prog.setResetSnapshot();
-        return prog;
+        return makeMasterProg1Target();
     }
 
     @Override
@@ -78,7 +69,8 @@ public class TPTrainingParamsSeek extends ToothpickTrainingParams {
                 TPActor target = MLUtil.getVertActor(prog);
                 if (self == null || target == null)
                     return 0;
-                return getGeometry().xDistWrapped(self.x, target.x) * inputScalingDistance;
+                return getGeometry().xDistWrapped(self.x, target.x)
+                    * inputScalingDistance;
             });
 
         // (target) relative position, y
@@ -87,7 +79,8 @@ public class TPTrainingParamsSeek extends ToothpickTrainingParams {
                 TPActor target = MLUtil.getVertActor(prog);
                 if (self == null || target == null)
                     return 0;
-                return getGeometry().yDistWrapped(self.y, target.y) * inputScalingDistance;
+                return getGeometry().yDistWrapped(self.y, target.y)
+                    * inputScalingDistance;
             });
 
         // (self) inertia, x

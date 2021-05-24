@@ -37,7 +37,7 @@ public class TPTrainingPlatform extends TPSimultaneousPlatform {
     private int fitListMaxSize = 5;
     private List<TPOrganism> fitList = new ArrayList<>();
     private TPOrganism.FitnessComparator fitComp = new TPOrganism.FitnessComparator();
-    
+
     private boolean savedSmearMode = true;
 
     private boolean initNeeded = true;
@@ -115,6 +115,7 @@ public class TPTrainingPlatform extends TPSimultaneousPlatform {
     }
 
     private void initGeneration() {
+        ttParams.targetSetup.init(ttParams);
         discardAllPrograms();
         ttParams.nextGeneration(ep.pop.organisms);
         for (int i = 0; i < ep.pop.organisms.size(); i++) {
@@ -136,6 +137,7 @@ public class TPTrainingPlatform extends TPSimultaneousPlatform {
         }
 
         super.update();
+        ttParams.targetSetup.update(ttParams);
 
         if (mode == Mode.TRAINING) {
             updateTRAINING();
@@ -150,7 +152,6 @@ public class TPTrainingPlatform extends TPSimultaneousPlatform {
 
             // smear-mode is off for the first iteration, to clear the screen
             if (counter == 1)
-                // setSmearMode(true);
                 setSmearMode(savedSmearMode);
 
             // update fitness etc
@@ -189,7 +190,6 @@ public class TPTrainingPlatform extends TPSimultaneousPlatform {
                         firstWinner = generationFirstWinner.org;
                     genPanel.afterEpochForToothpick(ep, firstWinner);
 
-                    // initGeneration(ep);
                     initGeneration();
 
                     generationCounter++;
@@ -205,7 +205,6 @@ public class TPTrainingPlatform extends TPSimultaneousPlatform {
         counter++;
     }
 
-    // private void updateFitList(TPOrganism tpOrg) {
     private void updateFitList() {
         boolean modified = false;
         for (int i = 0; i < ttParams.numTPOrganisms(); i++) {

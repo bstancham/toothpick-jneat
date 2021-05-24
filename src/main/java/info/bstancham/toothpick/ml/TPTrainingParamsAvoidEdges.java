@@ -38,21 +38,10 @@ public class TPTrainingParamsAvoidEdges extends ToothpickTrainingParams {
     public static TPActor getProtagonist(TPProgram prog) {
         return MLUtil.getHorizActor(prog);
     }
-    
+
     @Override
     protected TPProgram makeMasterProgram() {
-        TPProgram prog = MLUtil.makeProgHorizVsVertNoCollision();
-        // set drone-actor to new random position at beginning of each generation
-
-        TPActor protagonist = MLUtil.getHorizActor(prog);
-        protagonist.setBoundaryBehaviour(TPActor.BoundaryBehaviour.DIE_AT_BOUNDS);
-        
-        PBRandActorSetup randSetup = new PBRandActorSetup();
-        randSetup.setTarget(MLUtil.HORIZ_NAME);
-        randSetup.initBoundsWithMargins(prog.getGeometry(), 100);
-        prog.addResetBehaviour(randSetup);
-        prog.setResetSnapshot();
-        return prog;
+        return makeMasterProgNoTarget();
     }
 
     @Override

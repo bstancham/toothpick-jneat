@@ -8,6 +8,7 @@ import info.bschambers.toothpick.ui.swing.TPSwingUI;
 import java.awt.Color;
 import java.io.File;
 import java.util.List;
+import java.util.function.Supplier;
 import jneat.common.EnvConstant;
 import jneat.gui.MainGui;
 import jneat.misc.*;
@@ -274,13 +275,11 @@ public class App {
         m.add(new TPMenuItemIncr("population size: ", () -> "" + ttParams.populationSize,
                                  () -> incrPopulationSize(ttParams, -1),
                                  () -> incrPopulationSize(ttParams, 1)));
-        m.add(new TPMenuItemBool("mobile target: ",
-                                 ttParams::targetIsMobile,
-                                 ttParams::setTargetIsMobile));
         m.add(new TPMenuItemIncr("iterations per generation: ",
                                  () -> "" + ttParams.iterationsPerGeneration,
                                  () -> incrIterations(ttParams, -100),
                                  () -> incrIterations(ttParams, 100)));
+        m.add(makeMenuTargetChooser(ttParams));
         return m;
     }
 
@@ -292,10 +291,20 @@ public class App {
                                  platform::isSmearMode,
                                  platform::setSmearMode));
         m.add(new TPMenuItemSimple(() -> rerunButtonText(platform), () -> rerunButtonAction(platform)));
+        m.add(new TPMenuItemIncr("(in re-run) retain N fittest: ", () -> "" + platform.numRetainForRerun,
+                                 () -> incrRetainForRerun(platform, -1),
+                                 () -> incrRetainForRerun(platform, 1)));
         m.add(makeChampMatchMenu(platform));
-        // m.add(makeProgMenu("play against current champion", makeProgChampMatch(platform)));
-        m.add(new TPMenuItemSimple("reset experiment", () -> resetExperiment(platform)));
+        m.add(new TPMenuItemSimple("RESET EXPERIMENT!", () -> resetExperiment(platform)));
         return m;
+    }
+
+    private void incrRetainForRerun(TPTrainingPlatform platform, int amt) {
+        platform.numRetainForRerun += amt;
+        if (platform.numRetainForRerun < 1)
+            platform.numRetainForRerun = 1;
+        else if (platform.numRetainForRerun > platform.getParams().numTPOrganisms())
+            platform.numRetainForRerun = platform.getParams().numTPOrganisms();
     }
 
     private void resetExperiment(TPTrainingPlatform platform) {
@@ -455,6 +464,7 @@ public class App {
                     n++;
                     m.add(makeChampionSwitcherOption("TOP " + n, tpo, champSetup));
                 }
+                m.add(TPMenuItem.SPACER);
                 n = 0;
                 for (TPOrganism tpo : platform.getParams().organisms) {
                     n++;
@@ -471,6 +481,24 @@ public class App {
                                         champSetup.setChampion(tpo);
                                         System.out.println("switched champion to " + tpo
                                                            + " (fitness=" + tpo.org.getFitness() + ")");
+        });
+    }
+
+    private TPMenu makeMenuTargetChooser(ToothpickTrainingParams ttParams) {
+        TPMenu m = new TPMenu(() -> "target: " + ttParams.getTargetSetupLabel());
+        m.add(makeTargetChooserItem(ttParams, new TargetSetupStatic()));
+        m.add(makeTargetChooserItem(ttParams, new TargetSetupStaticTeleport()));
+        m.add(makeTargetChooserItem(ttParams, new TargetSetupMobile()));
+        m.add(makeTargetChooserItem(ttParams, new TargetSetupMobileChangeDir()));
+        m.add(makeTargetChooserItem(ttParams, new TargetSetupMobileTeleport()));
+        return m;
+    }
+
+    private TPMenuItem makeTargetChooserItem(ToothpickTrainingParams ttParams,
+                                             TargetSetup setup) {
+        return new TPMenuItemSimple(setup.getLabel(), () -> {
+                ttParams.targetSetup = setup;
+                System.out.println("new target-setup: " + ttParams.getTargetSetupLabel());
         });
     }
 

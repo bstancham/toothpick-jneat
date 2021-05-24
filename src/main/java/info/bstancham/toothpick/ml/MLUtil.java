@@ -5,16 +5,10 @@ import info.bschambers.toothpick.actor.*;
 import info.bschambers.toothpick.geom.*;
 import java.awt.Color;
 
-// public class MLFactory extends TPProgram {
 public class MLUtil {
 
     public static final String HORIZ_NAME = "Horizontal";
     public static final String VERT_NAME = "Vertical";
-
-    // private TPActor horiz;
-    // private TPActor vert;
-
-    // private int count = 0;
 
     /**
      * <p>Makes a program with two named actors, a horizontal line and a vertical line, as
@@ -30,9 +24,8 @@ public class MLUtil {
         prog.setResetSnapshot();
         return prog;
     }
-    
+
     public static TPProgram makeProgHorizVsVertNoCollision() {
-        // super("Horizontal vs Vertical");
         TPProgram prog = new TPProgram("Horizontal vs Vertical");
 
         // create the two actors (horiz & vert)
@@ -55,15 +48,10 @@ public class MLUtil {
         vert.name = VERT_NAME;
         prog.addActor(vert);
 
-        // TPFactory.setRandHeading(horiz, 0.5, 1);
-        // TPFactory.setRandHeading(vert, 0.5, 1);
-
-        // prog.addActor(horiz);
-        // prog.addActor(vert);
         prog.setBGColor(new Color(50, 150, 100));
         prog.setSmearMode(true);
         prog.setShowIntersections(true);
-        
+
         prog.init();
         prog.setResetSnapshot();
         return prog;
@@ -100,6 +88,11 @@ public class MLUtil {
         return prog.getActor(VERT_NAME);
     }
 
+    /** WARNING! Returns null if actor with name {@link TARGET_NAME} does not exist. */
+    public static TPActor getTargetActor(TPProgram prog) {
+        return prog.getActor(ToothpickTrainingParams.TARGET_NAME);
+    }
+
     /**
      * Gets the first Line in actor's form, or returns NULL if there is no Line.
      *
@@ -114,55 +107,6 @@ public class MLUtil {
         }
         return null;
     }
-
-    // @Override
-    // public void initProgram() {
-    //     super.initProgram();
-    //     reconnectHorizAndVert();
-    // }
-
-    // @Override
-    // public void reset() {
-    //     super.reset();
-    //     reconnectHorizAndVert();
-    // }
-
-    // /**
-    //  * init() uses this to reconnect references to the HORIZ and VERT actors.
-    //  *
-    //  * Need to maintain references to these two, but they get lost each time we call init
-    //  * because the initial-actors are recopied from the initial-actors list.
-    //  */
-    // private void reconnectHorizAndVert() {
-    //     for (TPActor a : actors) {
-    //         if (a.name.equals(horizName)) {
-    //             horiz = a;
-    //             // System.out.println("HorizVsVert: reconnect actor - " + a.name);
-    //         }
-    //         if (a.name.equals(vertName)) {
-    //             vert = a;
-    //             // System.out.println("HorizVsVert: reconnect actor - " + a.name);
-    //         }
-    //     }
-    // }
-
-    // @Override
-    // public void init() {
-    //     super.init();
-
-    //     // create the two actors
-
-    //     TPActor horiz = makeLineActor(-50, 0, 50, 0, 200, 350);
-    //     horiz.setColorGetter(new ColorSmoothMono(Color.RED));
-    //     addActor(horiz);
-
-    //     TPActor vert = makeLineActor(0, -50, 0, 50, 800, 350);
-    //     vert.setColorGetter(new ColorSmoothMono(Color.BLUE));
-    //     addActor(vert);
-
-    //     TPFactory.setRandHeading(horiz);
-    //     TPFactory.setRandHeading(vert);
-    // }
 
     public static TPActor makeLineActor(double x1, double y1, double x2, double y2,
                                         double posX, double posY) {
@@ -181,45 +125,5 @@ public class MLUtil {
         end = end.add(pos.invert());
         return makeLineActor(start.x, start.y, end.x, end.y, pos.x, pos.y);
     }
-
-    // public TPActor getHorizActor() { return horiz; }
-
-    // public TPActor getVertActor() { return vert; }
-
-    // @Override
-    // public void update() {
-    //     super.update();
-
-    //     // System.out.println(count++ + ": " + aliveStr(horiz) + " - " + aliveStr(vert));
-
-    //     if (!isFinished()) {
-
-    //         String msg = "";
-
-    //         if (!horiz.isAlive()) {
-    //             setFinished(true);
-    //             msg = "VERTICAL WINS!";
-    //         }
-
-    //         if (!vert.isAlive()) {
-    //             setFinished(true);
-    //             msg = "HORIZONTAL WINS!";
-    //         }
-
-    //         if (isFinished()) {
-    //             System.out.println(msg);
-    //             TPActor ta = TPFactory.textActor(this, msg);
-    //             ta.x = getGeometry().getWidth() / 2;
-    //             ta.y = 100;
-    //             // ta.yInertia = 0.2;
-    //             addActor(ta);
-    //         }
-    //     }
-
-    // }
-
-    // private String aliveStr(TPActor a) {
-    //     return a.name + "=" + (a.isAlive() ? "alive" : "dead");
-    // }
 
 }

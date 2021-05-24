@@ -33,16 +33,7 @@ public class TPTrainingParamsPointAt extends ToothpickTrainingParams {
 
     @Override
     protected TPProgram makeMasterProgram() {
-        TPProgram prog = MLUtil.makeProgHorizVsVertNoCollision();
-        // set drone-actor to new random position at beginning of each generation
-        PBRandActorSetup randDroneSetup = new PBRandActorSetup();
-        randDroneSetup.setTarget(MLUtil.VERT_NAME);
-        randDroneSetup.initBoundsRightHandSide(prog.getGeometry());
-        if (targetIsMobile())
-            randDroneSetup.initInertia(-1, 1);
-        prog.addResetBehaviour(randDroneSetup);
-        prog.setResetSnapshot();
-        return prog;
+        return makeMasterProg1Target();
     }
 
     @Override

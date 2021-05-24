@@ -1,6 +1,7 @@
 package info.bstancham.toothpick.ml;
 
 import info.bschambers.toothpick.PBRandActorSetup;
+import info.bschambers.toothpick.ProgramBehaviour;
 import info.bschambers.toothpick.TPBase;
 import info.bschambers.toothpick.TPGeometry;
 import info.bschambers.toothpick.TPProgram;
@@ -8,16 +9,17 @@ import info.bschambers.toothpick.actor.*;
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Supplier;
 import jneat.neat.Organism;
 
 /**
- * Agregates a bunch of parameters for running jneat with toothpick system.
+ * <p>Agregates parameters and methods required for running jneat with toothpick system.</p>
  *
- * The following parameters must all be configured:
- * {@link masterProg}
- * {@link masterFitness}
- * {@link masterController}
- * {@link numOrganisms}
+ * The following parameters need to be configured:
+ * - abstract method makeMasterProgram()
+ * - abstract method makeFitness()
+ * - abstract method makeController()
+ * - targetSetup
  *
  * HOW IT WORKS
  *
@@ -27,20 +29,20 @@ import jneat.neat.Organism;
  */
 public abstract class ToothpickTrainingParams {
 
-    private TPBase base;
+    public static final String PROTAGONIST_NAME = MLUtil.HORIZ_NAME;
+    public static final String TARGET_NAME = MLUtil.VERT_NAME;
 
     /** An identifying label for this ToothpickTrainingParams instance. */
     public String label;
 
+    private TPBase base;
     public String genomeFilename;
-
     public int numEpoch = 6;
-
     public int populationSize = 10;
-
     public int iterationsPerGeneration = 1500;
 
-    public boolean mobileTarget = true;
+    public TargetSetup targetSetup = new TargetSetupStatic();
+    public String getTargetSetupLabel() { return targetSetup.getLabel(); }
 
     /**
      * <p>The master-program - an identical copy of this program is made for each of the
@@ -69,17 +71,21 @@ public abstract class ToothpickTrainingParams {
         masterFitness = makeFitness();
     }
 
-    protected abstract TPProgram makeMasterProgram();
+    public TPBase getBase() { return base; }
 
-    protected abstract ToothpickFitness makeFitness();
-
-    protected abstract NeuralNetworkController makeController();
+    public TPGeometry getGeometry() { return masterProg.getGeometry(); }
 
     public String getGenomeFilename() { return genomeFilename; }
 
     public int numTPOrganisms() { return organisms.size(); }
 
     public TPOrganism getTPOrganism(int i) { return organisms.get(i); }
+
+    protected abstract TPProgram makeMasterProgram();
+
+    protected abstract ToothpickFitness makeFitness();
+
+    protected abstract NeuralNetworkController makeController();
 
     public void nextGeneration(List<Organism> neatOrganisms) {
         masterProg.reset();
@@ -120,12 +126,56 @@ public abstract class ToothpickTrainingParams {
             + "prefix_winner                winner\n";
     }
 
-    public boolean targetIsMobile() { return mobileTarget; }
+    protected TPProgram makeMasterProg1Target() {
+        TPProgram prog = new TPProgram("Training Program: 1 target");
+        prog.setBGColor(new Color(50, 150, 100));
+        prog.setSmearMode(true);
+        prog.setShowIntersections(true);
 
-    public void setTargetIsMobile(boolean val) { mobileTarget = val; }
+        // create the two actors
+        TPActor protagonist = MLUtil.makeLineActor(-50, 0, 50, 0, 200, 350);
+        protagonist.setColorGetter(new ColorMono(Color.RED));
+        protagonist.setVertexColorGetter(new ColorMono(Color.WHITE));
+        protagonist.name = PROTAGONIST_NAME;
+        prog.addActor(protagonist);
+        TPActor target = MLUtil.makeLineActor(0, -50, 0, 50, 800, 350);
+        target.setColorGetter(new ColorMono(Color.BLUE));
+        target.setVertexColorGetter(new ColorMono(Color.WHITE));
+        target.name = TARGET_NAME;
+        prog.addActor(target);
 
-    public TPGeometry getGeometry() { return masterProg.getGeometry(); }
+        // set both actors to new random position at beginning of each generation
+        PBRandActorSetup randDroneSetup = new PBRandActorSetup();
+        randDroneSetup.setTarget(PROTAGONIST_NAME, TARGET_NAME);
+        randDroneSetup.initBounds(prog.getGeometry());
+        prog.addResetBehaviour(randDroneSetup);
 
-    public TPBase getBase() { return base; }
+        prog.init();
+        prog.setResetSnapshot();
+        return prog;
+    }
+
+    protected TPProgram makeMasterProgNoTarget() {
+        TPProgram prog = new TPProgram("Training Program: no target");
+        prog.setBGColor(new Color(50, 150, 100));
+        prog.setSmearMode(true);
+        prog.setShowIntersections(true);
+        // create the protagonist
+        TPActor a = MLUtil.makeLineActor(-50, 0, 50, 0, 200, 350);
+        a.setBoundaryBehaviour(TPActor.BoundaryBehaviour.DIE_AT_BOUNDS);
+        a.setColorGetter(new ColorMono(Color.RED));
+        a.setVertexColorGetter(new ColorMono(Color.WHITE));
+        a.name = PROTAGONIST_NAME;
+        prog.addActor(a);
+        // set actor to new random position at beginning of each generation
+        PBRandActorSetup randSetup = new PBRandActorSetup();
+        randSetup.setTarget(PROTAGONIST_NAME);
+        randSetup.initBounds(prog.getGeometry());
+        prog.addResetBehaviour(randSetup);
+
+        prog.init();
+        prog.setResetSnapshot();
+        return prog;
+    }
 
 }
