@@ -461,7 +461,11 @@ public class App {
                 player.getArchetype().name = MLUtil.VERT_NAME;
                 player.getArchetype().setColorGetter(new ColorRandom());
                 player.reset();
-                prog.setPlayer(player);
+                if (prog.numPlayers() > 0) {
+                    prog.setPlayer(0, player);
+                } else {
+                    prog.addPlayer(player);
+                }
             }
         }
 
