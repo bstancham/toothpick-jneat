@@ -1,8 +1,8 @@
-package info.bstancham.toothpick.ml;
+package info.bstancham.toothpick.jneat;
 
-import info.bschambers.toothpick.PBRandActorSetup;
 import info.bschambers.toothpick.TPBase;
 import info.bschambers.toothpick.TPProgram;
+import info.bschambers.toothpick.PBRandActorSetup;
 import info.bschambers.toothpick.actor.*;
 import java.awt.Color;
 import java.util.ArrayList;
@@ -14,10 +14,10 @@ import jneat.neat.Organism;
  *
  * <p>INPUTS:</p>
  * <ul>
- * <li>(target) relative position, x</li>
- * <li>(target) relative position, y</li>
- * <li>(self) velocity, x</li>
- * <li>(self) velocity, y</li>
+ * <li>(self) position - x</li>
+ * <li>(self) position - y</li>
+ * <li>(self) inertia - x</li>
+ * <li>(self) inertia - y</li>
  * </ul>
  *
  * <p>OUTPUTS:</p>
@@ -28,27 +28,25 @@ import jneat.neat.Organism;
  * <li>thrust right</li>
  * </ul>
  */
-public class TPTrainingParamsSeek extends ToothpickTrainingParams {
+public class TPTrainingParamsAvoidEdges extends ToothpickTrainingParams {
 
-    protected double inputScalingDistance = 0.01;
-    protected double inputScalingInertia = 10;
-
-    public TPTrainingParamsSeek(TPBase base) {
-        this(base, "Seek", "genome_in4_out4");
+    public TPTrainingParamsAvoidEdges(TPBase base) {
+        super(base, "Avoid-Edges", "genome_in4_out4");
     }
 
-    public TPTrainingParamsSeek(TPBase base, String label, String genomeFilename) {
-        super(base, label, genomeFilename);
+    /** WARNING! Returns null if actor with name {@link PROTAGONIST_NAME} does not exist. */
+    public static TPActor getProtagonist(TPProgram prog) {
+        return MLUtil.getHorizActor(prog);
     }
 
     @Override
     protected TPProgram makeMasterProgram() {
-        return makeMasterProg1Target();
+        return makeMasterProgNoTarget();
     }
 
     @Override
     protected ToothpickFitness makeFitness() {
-        return new TPFitnessProximity();
+        return new TPFitnessVelocityAndDontDie();
     }
 
     @Override
@@ -61,40 +59,34 @@ public class TPTrainingParamsSeek extends ToothpickTrainingParams {
         return nnc;
     }
 
-    protected void addInputs(NeuralNetworkController nnc) {
+    private void addInputs(NeuralNetworkController nnc) {
 
-        // (target) relative position, x
+        // (self) position, x
         nnc.addInput((TPProgram prog) -> {
-                TPActor self = MLUtil.getHorizActor(prog);
-                TPActor target = MLUtil.getVertActor(prog);
-                if (self == null || target == null)
-                    return 0;
-                return getGeometry().xDistWrapped(self.x, target.x)
-                    * inputScalingDistance;
+                TPActor a = getProtagonist(prog);
+                if (a == null) return 0;
+                return a.x;
             });
 
-        // (target) relative position, y
+        // (self) position, y
         nnc.addInput((TPProgram prog) -> {
-                TPActor self = MLUtil.getHorizActor(prog);
-                TPActor target = MLUtil.getVertActor(prog);
-                if (self == null || target == null)
-                    return 0;
-                return getGeometry().yDistWrapped(self.y, target.y)
-                    * inputScalingDistance;
+                TPActor a = getProtagonist(prog);
+                if (a == null) return 0;
+                return a.y;
             });
 
         // (self) inertia, x
         nnc.addInput((TPProgram prog) -> {
-                TPActor self = MLUtil.getHorizActor(prog);
-                if (self == null) return 0;
-                return self.xInertia * inputScalingInertia;
+                TPActor a = getProtagonist(prog);
+                if (a == null) return 0;
+                return a.xInertia;
             });
 
         // (self) inertia, y
         nnc.addInput((TPProgram prog) -> {
-                TPActor self = MLUtil.getHorizActor(prog);
-                if (self == null) return 0;
-                return self.yInertia * inputScalingInertia;
+                TPActor a = getProtagonist(prog);
+                if (a == null) return 0;
+                return a.yInertia;
             });
     }
 

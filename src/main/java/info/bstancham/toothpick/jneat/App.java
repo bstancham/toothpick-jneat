@@ -1,4 +1,4 @@
-package info.bstancham.toothpick.ml;
+package info.bstancham.toothpick.jneat;
 
 import info.bschambers.toothpick.*;
 import info.bschambers.toothpick.actor.*;
@@ -12,7 +12,7 @@ import java.util.function.Supplier;
 import jneat.common.EnvConstant;
 import jneat.gui.MainGui;
 import jneat.misc.*;
-import static info.bstancham.toothpick.ml.TPTrainingPlatform.Mode;
+import static info.bstancham.toothpick.jneat.TPTrainingPlatform.Mode;
 
 public class App {
 

@@ -1,6 +1,6 @@
 package jneat.common;
 
-import info.bstancham.toothpick.ml.ToothpickTrainingParams;
+import info.bstancham.toothpick.jneat.ToothpickTrainingParams;
 
 /**
  * Environment constants?

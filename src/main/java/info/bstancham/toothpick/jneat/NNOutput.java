@@ -1,4 +1,4 @@
-package info.bstancham.toothpick.ml;
+package info.bstancham.toothpick.jneat;
 
 /**
  * A neural network output for use with {@link ToothpickTraining}.

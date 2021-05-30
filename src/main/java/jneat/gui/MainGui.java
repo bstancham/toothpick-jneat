@@ -1,6 +1,6 @@
 package jneat.gui;
 
-import info.bstancham.toothpick.ml.ToothpickTrainingParams;
+import info.bstancham.toothpick.jneat.ToothpickTrainingParams;
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;

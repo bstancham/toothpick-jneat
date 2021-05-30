@@ -1,4 +1,4 @@
-package info.bstancham.toothpick.ml;
+package info.bstancham.toothpick.jneat;
 
 import info.bschambers.toothpick.actor.TPActor;
 import info.bschambers.toothpick.TPProgram;

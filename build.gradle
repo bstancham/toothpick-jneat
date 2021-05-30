@@ -31,5 +31,5 @@ dependencies {
 
 application {
     // Define the main class for the application.
-    mainClass = 'info.bstancham.toothpick.ml.App'
+    mainClass = 'info.bstancham.toothpick.jneat.App'
 }

@@ -1,7 +1,7 @@
 package jneat.gui;
 
 import info.bschambers.toothpick.TPGeometry;
-import info.bstancham.toothpick.ml.ToothpickTrainingParams;
+import info.bstancham.toothpick.jneat.ToothpickTrainingParams;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.geom.*;
@@ -289,7 +289,7 @@ public class Generation extends JPanel implements ActionListener, ItemListener {
     public void setV1Species(Vector v) { v1_species = v; }
 
     public String[] getMyStyles() { return My_styles; }
-    
+
     private static void msg(String str) {
         // System.out.println(str);
     }
@@ -374,7 +374,7 @@ public class Generation extends JPanel implements ActionListener, ItemListener {
         startNeat();
         // logInfoAfterEnd();
     }
-    
+
     public void logInfoBeforeStart() {
         logger.sendToLog(" generation.startProcess() --- START");
         try {
@@ -717,7 +717,7 @@ public class Generation extends JPanel implements ActionListener, ItemListener {
             EnvConstant.CURR_ORGANISM_CHAMPION = null;
             EnvConstant.FIRST_ORGANISM_WINNER = null;
 
-            
+
             if (EnvConstant.TYPE_OF_SIMULATION == EnvConstant.SIMULATION_FROM_TOOTHPICK) {
 
                 ttParams = EnvConstant.TOOTHPICK_TRAINING_PARAMS;
@@ -728,10 +728,10 @@ public class Generation extends JPanel implements ActionListener, ItemListener {
                     logger.sendToLog(" generation: ToothpickTrainingParams --> " + ttParams);
                     u_neat.p_pop_size = ttParams.populationSize;
                 }
-                
+
                 logger.sendToLog(" generation: override population-size from params --> "
                                  + u_neat.p_pop_size);
-                
+
             }
 
         } catch (Throwable e) {
@@ -751,14 +751,14 @@ public class Generation extends JPanel implements ActionListener, ItemListener {
             for (expcount = 0; expcount < ep.neat.p_num_runs; expcount++) {
 
                 spawnPopulation(ep);
-                
+
                 //// start ............
-               
+
                 for (ep.gen = 1; ep.gen <= EnvConstant.NUMBER_OF_EPOCH; ep.gen++) {
                     // curr_name_pop_specie =  EnvConstant.PREFIX_SPECIES_FILE + fmt5.format(gen);
                     ep.curr_name_pop_specie = EnvConstant.PREFIX_SPECIES_FILE;
                     EnvConstant.SUPER_WINNER_ = false;
-                    
+
                     epoch(ep);
 
                     logger.sendToStatus(" running generation -> " + ep.gen);
@@ -781,8 +781,8 @@ public class Generation extends JPanel implements ActionListener, ItemListener {
         logger.sendToLog(" generation:      spawning population ...");
 
         System.out.println(ep.infoString());
-        System.out.println("u_genome = " + u_genome); 
-        
+        System.out.println("u_genome = " + u_genome);
+
         if ((EnvConstant.TYPE_OF_START == EnvConstant.START_FROM_GENOME) &&  (!EnvConstant.FORCE_RESTART))
             ep.pop = new Population(u_genome, ep.neat.p_pop_size);
 
@@ -796,7 +796,7 @@ public class Generation extends JPanel implements ActionListener, ItemListener {
         System.out.println("POPULATION SPAWNED --> " + ep.pop);
         ep.pop.verify();
     }
-    
+
     public boolean startNeat_END(EpochParams ep) {
         try {
             // before exit save last population

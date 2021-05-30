@@ -1,4 +1,4 @@
-package info.bstancham.toothpick.ml;
+package info.bstancham.toothpick.jneat;
 
 import info.bschambers.toothpick.PBRandActorSetup;
 import info.bschambers.toothpick.ProgramBehaviour;
