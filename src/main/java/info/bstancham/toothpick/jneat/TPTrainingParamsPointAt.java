@@ -25,7 +25,7 @@ import jneat.neat.Organism;
  * <li>increase angle-inertia</li>
  * </ul>
  */
-public class TPTrainingParamsPointAt extends ToothpickTrainingParams {
+public class TPTrainingParamsPointAt extends TPTrainingParams {
 
     public TPTrainingParamsPointAt(TPBase base) {
         super(base, "Point-At", "genome_in3_out2");

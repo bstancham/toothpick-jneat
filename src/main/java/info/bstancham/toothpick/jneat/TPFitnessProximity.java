@@ -15,8 +15,8 @@ public class TPFitnessProximity extends ToothpickFitness {
         if (a != null && target != null) {
             double width = prog.getGeometry().getWidth();
             double height = prog.getGeometry().getHeight();
-            double xDist = Math.abs(target.x - a.x);
-            double yDist = Math.abs(target.y - a.y);
+            double xDist = Math.abs(prog.getGeometry().xDistWrapped(a.x, target.x));
+            double yDist = Math.abs(prog.getGeometry().yDistWrapped(a.y, target.y));
             double xFraction = width  - xDist;
             double yFraction = height - yDist;
             // proximity, as fraction of play-area size
@@ -26,11 +26,10 @@ public class TPFitnessProximity extends ToothpickFitness {
             fitness = accumulatedFitness / numIterations;
         }
     }
-            
+
     @Override
     public ToothpickFitness copy() {
         TPFitnessProximity out = new TPFitnessProximity();
-        // out.maxFitness = maxFitness;
         out.fitness = fitness;
         out.numIterations = numIterations;
         out.accumulatedFitness = accumulatedFitness;

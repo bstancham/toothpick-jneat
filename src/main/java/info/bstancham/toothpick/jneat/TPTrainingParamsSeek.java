@@ -28,10 +28,10 @@ import jneat.neat.Organism;
  * <li>thrust right</li>
  * </ul>
  */
-public class TPTrainingParamsSeek extends ToothpickTrainingParams {
+public class TPTrainingParamsSeek extends TPTrainingParams {
 
-    protected double inputScalingDistance = 0.01;
-    protected double inputScalingInertia = 10;
+    protected double inputScalingDistance = 0.1;
+    protected double inputScalingInertia = 50;
 
     public TPTrainingParamsSeek(TPBase base) {
         this(base, "Seek", "genome_in4_out4");

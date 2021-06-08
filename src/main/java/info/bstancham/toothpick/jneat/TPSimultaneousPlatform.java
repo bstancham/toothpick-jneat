@@ -2,6 +2,7 @@ package info.bstancham.toothpick.jneat;
 
 import info.bschambers.toothpick.*;
 import info.bschambers.toothpick.actor.TPActor;
+import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 
 /**
@@ -117,6 +118,19 @@ public class TPSimultaneousPlatform extends TPPlatform {
             for (TPProgram prog : programs)
                 prog.update();
             updateActorsInPlace();
+        }
+
+        @Override
+        public void keyPressed(KeyEvent e) {
+            // System.out.println("TPSPProgram.keyPressed(): " + e.getKeyCode());
+            for (TPProgram prog : programs)
+                prog.keyPressed(e);
+        }
+
+        public void keyReleased(KeyEvent e) {
+            // System.out.println("TPSPProgram.keyReleased(): " + e.getKeyCode());
+            for (TPProgram prog : programs)
+                prog.keyReleased(e);
         }
     }
 

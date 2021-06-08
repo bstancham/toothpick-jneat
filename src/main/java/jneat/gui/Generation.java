@@ -1,7 +1,7 @@
 package jneat.gui;
 
 import info.bschambers.toothpick.TPGeometry;
-import info.bstancham.toothpick.jneat.ToothpickTrainingParams;
+import info.bstancham.toothpick.jneat.TPTrainingParams;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.geom.*;
@@ -91,7 +91,7 @@ public class Generation extends JPanel implements ActionListener, ItemListener {
     private int u_max_unit = 0;
     private int u_inp_unit = 0;
     private int u_out_unit = 0;
-    private ToothpickTrainingParams ttParams = null;
+    private TPTrainingParams ttParams = null;
 
 
     private volatile Thread lookupThread;
@@ -1383,7 +1383,7 @@ public class Generation extends JPanel implements ActionListener, ItemListener {
                 }
             }
 
-            //compute average and max fitness for each species
+            // compute average and max fitness for each species
             Iterator itr_specie = ep.pop.species.iterator();
             int i = 1;
             while (itr_specie.hasNext()) {
@@ -1394,19 +1394,16 @@ public class Generation extends JPanel implements ActionListener, ItemListener {
                                    + ": average-fitness=" + _specie.getAve_fitness()
                                    + ": greatest-fitness=" + _specie.getMax_fitness());
             }
-            // Only print to file every print_every ep.gen
 
+            // Only print to file every print_every ep.gen
             String cause1 = " ";
             String cause2 = " ";
-
             // System.out.println("generation = " + generation + " _neat.p_print_every=" + _neat.p_print_every);
             if (((ep.gen % ep.neat.p_print_every) == 0) || (win)) {
-
                 if ((ep.gen % ep.neat.p_print_every) == 0)
                     cause1 = " request";
                 if (win)
                     cause2 = " winner";
-
                 // String name_of_specie = EnvRoutine.getJneatFileData(filename) + ep.gen;
                 String name_of_specie = EnvRoutine.getJneatFileData(ep.curr_name_pop_specie) + ep.gen;
                 ep.pop.print_to_file_by_species(name_of_specie);
@@ -1441,7 +1438,6 @@ public class Generation extends JPanel implements ActionListener, ItemListener {
             }
 
             // wait an epoch and make a reproduction of the best species
-
             ep.pop.epoch(ep.gen);
 
             if (!EnvConstant.REPORT_SPECIES_TESTA.equalsIgnoreCase("")) {
@@ -1483,9 +1479,7 @@ public class Generation extends JPanel implements ActionListener, ItemListener {
             v1_fitness_win.add(new Double(ep.gen));
             v1_fitness_win.add(new Double(EnvConstant.MAX_WINNER_FITNESS));
 
-
             drawCurve(riga1, ep.pop.getHighest_fitness(), ep.gen,  ep.pop.getSpecies().size(),  ep.neat.p_pop_size);
-
 
             if (win)
                 riga1 = "Time : " + ep.gen + " found WINNER ! ";

@@ -62,6 +62,7 @@ public class App {
         dronesNum.setDronesGoal(num);
         prog.addBehaviour(dronesNum);
         prog.addBehaviour(new PBToothpickPhysics());
+        prog.setResetSnapshot();
         return prog;
     }
 
@@ -258,15 +259,15 @@ public class App {
 
     private TPMenu makeMenuToothpickTrainingPrograms() {
         TPMenu m = new TPMenu("jneat training: TOOTHPICK");
-        m.add(new TPMenuItemSimple("Test platform (no training)", () -> System.out.println("... todo...")));
         m.add(makeMenuTPTraining(new TPTrainingParamsPointAt(base)));
         m.add(makeMenuTPTraining(new TPTrainingParamsSeek(base)));
         m.add(makeMenuTPTraining(new TPTrainingParamsSeekIn6Out4(base)));
+        m.add(makeMenuTPTraining(new TPTrainingParamsSeekIn6Out4FitPlus(base)));
         m.add(makeMenuTPTraining(new TPTrainingParamsAvoidEdges(base)));
         return m;
     }
 
-    private TPMenu makeMenuTPTraining(ToothpickTrainingParams ttParams) {
+    private TPMenu makeMenuTPTraining(TPTrainingParams ttParams) {
         TPMenu m = new TPMenu("train " + ttParams.label);
         m.add(makeTrainingPlatformMenu(makeTrainingPlatform(ttParams)));
         m.add(new TPMenuItemIncr("num epochs: ", () -> "" + ttParams.numEpoch,
@@ -305,6 +306,7 @@ public class App {
                                  () -> incrRetainForRerun(platform, 1)));
         m.add(makeChampMatchMenu(platform));
         m.add(new TPMenuItemSimple("RESET EXPERIMENT!", () -> resetExperiment(platform)));
+        m.add(makeTrainingPlatformPrintInfoMenu(platform));
         return m;
     }
 
@@ -407,7 +409,7 @@ public class App {
         }
     }
 
-    private TPTrainingPlatform makeTrainingPlatform(ToothpickTrainingParams ttParams) {
+    private TPTrainingPlatform makeTrainingPlatform(TPTrainingParams ttParams) {
         return new TPTrainingPlatform(ttParams, base);
     }
 
@@ -466,12 +468,15 @@ public class App {
                 } else {
                     prog.addPlayer(player);
                 }
+
+                // monitor champion's fitness in realtime
+
             }
         }
 
-        public void setChampion(TPOrganism tpOrg) {
-            champ = tpOrg;
-        }
+        public TPOrganism getChampion() { return champ; }
+
+        public void setChampion(TPOrganism tpOrg) { champ = tpOrg; }
     }
 
     private TPMenu makeMenuSwitchChampion(ChampMatchSetup champSetup, TPTrainingPlatform platform) {
@@ -503,17 +508,24 @@ public class App {
         });
     }
 
-    private TPMenu makeMenuTargetChooser(ToothpickTrainingParams ttParams) {
+    private TPMenu makeTrainingPlatformPrintInfoMenu(TPTrainingPlatform platform) {
+        TPMenu m = new TPMenu(() -> "print diagnostic info");
+        m.add(new TPMenuItemSimple("current fit-list", () -> platform.printFitList()));
+        return m;
+    }
+
+    private TPMenu makeMenuTargetChooser(TPTrainingParams ttParams) {
         TPMenu m = new TPMenu(() -> "target: " + ttParams.getTargetSetupLabel());
         m.add(makeTargetChooserItem(ttParams, new TargetSetupStatic()));
         m.add(makeTargetChooserItem(ttParams, new TargetSetupStaticTeleport()));
         m.add(makeTargetChooserItem(ttParams, new TargetSetupMobile()));
         m.add(makeTargetChooserItem(ttParams, new TargetSetupMobileChangeDir()));
         m.add(makeTargetChooserItem(ttParams, new TargetSetupMobileTeleport()));
+        m.add(makeTargetChooserItem(ttParams, new TargetSetupPlayer1()));
         return m;
     }
 
-    private TPMenuItem makeTargetChooserItem(ToothpickTrainingParams ttParams,
+    private TPMenuItem makeTargetChooserItem(TPTrainingParams ttParams,
                                              TargetSetup setup) {
         return new TPMenuItemSimple(setup.getLabel(), () -> {
                 ttParams.targetSetup = setup;
@@ -521,25 +533,25 @@ public class App {
         });
     }
 
-    private void incrNumEpoch(ToothpickTrainingParams params, int amt) {
+    private void incrNumEpoch(TPTrainingParams params, int amt) {
         params.numEpoch += amt;
         if (params.numEpoch < 1)
             params.numEpoch = 1;
     }
 
-    private void incrPopulationSize(ToothpickTrainingParams params, int amt) {
+    private void incrPopulationSize(TPTrainingParams params, int amt) {
         params.populationSize += amt;
         if (params.populationSize < 1)
             params.populationSize = 1;
     }
 
-    private void incrIterations(ToothpickTrainingParams params, int amt) {
+    private void incrIterations(TPTrainingParams params, int amt) {
         params.iterationsPerGeneration += amt;
         if (params.iterationsPerGeneration < 100)
             params.iterationsPerGeneration = 100;
     }
 
-    private String safeGetLabel(ToothpickTrainingParams params) {
+    private String safeGetLabel(TPTrainingParams params) {
         if (params == null)
             return "NULL";
         return params.label;

@@ -21,7 +21,7 @@ public class TPTrainingPlatform extends TPSimultaneousPlatform {
     private Mode mode = Mode.READY_TO_TRAIN;
 
     private TPBase base;
-    private ToothpickTrainingParams ttParams;
+    private TPTrainingParams ttParams;
 
     private Generation genPanel = null;
     private Generation.EpochParams ep = null;
@@ -46,7 +46,7 @@ public class TPTrainingPlatform extends TPSimultaneousPlatform {
     public int numGensExtend = 1;
     private int extendedGenerations = 0;
 
-    public TPTrainingPlatform(ToothpickTrainingParams ttParams, TPBase base) {
+    public TPTrainingPlatform(TPTrainingParams ttParams, TPBase base) {
         super(ttParams.label, ttParams.getGeometry());
         this.ttParams = ttParams;
         this.base = base;
@@ -55,7 +55,7 @@ public class TPTrainingPlatform extends TPSimultaneousPlatform {
 
     public Mode getMode() { return mode; }
 
-    public ToothpickTrainingParams getParams() { return ttParams; }
+    public TPTrainingParams getParams() { return ttParams; }
 
     public int getNumEpoch() { return getParams().numEpoch + extendedGenerations; }
 
@@ -66,41 +66,6 @@ public class TPTrainingPlatform extends TPSimultaneousPlatform {
     public int getCurrentIteration() { return counter; }
 
     public int getNumGensExtend() { return numGensExtend; }
-
-    public void initRerun() {
-        System.out.println("TPTrainingPlatform.initRerun()");
-        mode = Mode.READY_TO_RERUN;
-        // sort by fitness BEFORE reset-generation
-        ttParams.sortTPOrganismsByFitness();
-        resetGeneration();
-        // hide actors, except for the n fittest
-        int n = numRetainForRerun;
-        System.out.println("TPTrainingPlatform: hide selected programs...");
-        for (int i = 0; i < numPrograms(); i++) {
-            if (i >= numPrograms() - n) {
-                System.out.println("... " + i + ": KEEP (fitness=" + ttParams.getTPOrganism(i).getFitness() + ")");
-            } else {
-                System.out.println("... " + i + ": hide (fitness=" + ttParams.getTPOrganism(i).getFitness() + ")");
-                setVisible(i, false);
-            }
-        }
-    }
-
-    public void cancelRerun() {
-        System.out.println("TPTrainingPlatform.cancelRerun()");
-        mode = Mode.TRAINING;
-        resetGeneration();
-    }
-
-    private void resetGeneration() {
-        for (TPOrganism tpo : ttParams.organisms)
-            tpo.resetPosition();
-        updateActorsAllPrograms();
-        // turn off smear-mode (just for first iteration)
-        savedSmearMode = isSmearMode();
-        setSmearMode(false);
-        counter = 1;
-    }
 
     /**
      * Extends training by {@link numGensExtend} generations.
@@ -123,7 +88,7 @@ public class TPTrainingPlatform extends TPSimultaneousPlatform {
         EnvConstant.TYPE_OF_SIMULATION = EnvConstant.SIMULATION_FROM_TOOTHPICK;
         EnvConstant.TYPE_OF_START = EnvConstant.START_FROM_GENOME;
 
-        genPanel.initAllMap();
+        // genPanel.initAllMap();
         EnvConstant.FORCE_RESTART = false;
 
         // System.out.println("ttParams.genomeFilename = " + ttParams.genomeFilename);
@@ -154,6 +119,41 @@ public class TPTrainingPlatform extends TPSimultaneousPlatform {
         // turn off smear-mode (just for first iteration)
         savedSmearMode = isSmearMode();
         setSmearMode(false);
+    }
+
+    private void resetGeneration() {
+        for (TPOrganism tpo : ttParams.organisms)
+            tpo.resetPosition();
+        updateActorsAllPrograms();
+        // turn off smear-mode (just for first iteration)
+        savedSmearMode = isSmearMode();
+        setSmearMode(false);
+        counter = 1;
+    }
+
+    public void initRerun() {
+        System.out.println("TPTrainingPlatform.initRerun()");
+        mode = Mode.READY_TO_RERUN;
+        // sort by fitness BEFORE reset-generation
+        ttParams.sortTPOrganismsByFitness();
+        resetGeneration();
+        // hide actors, except for the n fittest
+        int n = numRetainForRerun;
+        System.out.println("TPTrainingPlatform: hide selected programs...");
+        for (int i = 0; i < numPrograms(); i++) {
+            if (i >= numPrograms() - n) {
+                System.out.println("... " + i + ": KEEP (fitness=" + ttParams.getTPOrganism(i).getFitness() + ")");
+            } else {
+                System.out.println("... " + i + ": hide (fitness=" + ttParams.getTPOrganism(i).getFitness() + ")");
+                setVisible(i, false);
+            }
+        }
+    }
+
+    public void cancelRerun() {
+        System.out.println("TPTrainingPlatform.cancelRerun()");
+        mode = Mode.TRAINING;
+        resetGeneration();
     }
 
     @Override
@@ -201,6 +201,7 @@ public class TPTrainingPlatform extends TPSimultaneousPlatform {
 
                 if (generationCounter >= getNumEpoch()) {
                     System.out.println("END OF TRAINING");
+                    updateFitList();
                     printFitList();
                     // System.out.println("... greatest fitness = " + greatestFitness
                     //                    + " (" + fittestTPOrganism + ")");
@@ -272,7 +273,7 @@ public class TPTrainingPlatform extends TPSimultaneousPlatform {
         }
     }
 
-    private void printFitList() {
+    public void printFitList() {
         System.out.println("FITTEST ORGANISMS:");
         int n = 1;
         for (TPOrganism tpo : fitList)

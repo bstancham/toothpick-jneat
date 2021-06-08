@@ -1,6 +1,7 @@
 package info.bstancham.toothpick.jneat;
 
 import info.bschambers.toothpick.PBRandActorSetup;
+import info.bschambers.toothpick.PBMisc;
 import info.bschambers.toothpick.ProgramBehaviour;
 import info.bschambers.toothpick.TPBase;
 import info.bschambers.toothpick.TPGeometry;
@@ -27,7 +28,7 @@ import jneat.neat.Organism;
  * - invoke nextGeneration(), to create a new batch of TPOrganisms
  * - invoke update() for each iteration of the generation
  */
-public abstract class ToothpickTrainingParams {
+public abstract class TPTrainingParams {
 
     public static final String PROTAGONIST_NAME = MLUtil.HORIZ_NAME;
     public static final String TARGET_NAME = MLUtil.VERT_NAME;
@@ -39,8 +40,9 @@ public abstract class ToothpickTrainingParams {
     public String genomeFilename;
     public int numEpoch = 6;
     public int populationSize = 10;
-    public int iterationsPerGeneration = 1500;
+    public int iterationsPerGeneration = 3000;
 
+    /** Manages the target-actor throughout the running of a generation. */
     public TargetSetup targetSetup = new TargetSetupStatic();
     public String getTargetSetupLabel() { return targetSetup.getLabel(); }
 
@@ -58,7 +60,7 @@ public abstract class ToothpickTrainingParams {
 
     public List<TPOrganism> organisms = new ArrayList<>();
 
-    public ToothpickTrainingParams(TPBase base, String label, String genomeFilename) {
+    public TPTrainingParams(TPBase base, String label, String genomeFilename) {
         this.base = base;
         this.label = label;
         this.genomeFilename = genomeFilename;
@@ -102,7 +104,9 @@ public abstract class ToothpickTrainingParams {
      */
     private TPProgram makeProgramCopy() {
         TPProgram p = new TPProgram(masterProg.getResetSnapshot());
-        MLUtil.setActorColorRandGraduated(p);
+        TPActor horiz = MLUtil.getHorizActor(p);
+        if (horiz != null)
+            MLUtil.setActorColorNotRed(horiz);
         p.setResetSnapshot();
         return p;
     }
@@ -132,15 +136,19 @@ public abstract class ToothpickTrainingParams {
         prog.setSmearMode(true);
         prog.setShowIntersections(true);
 
+        // larger than usual play area
+        prog.getGeometry().setupAndCenter(3000, 2400);
+        prog.getGeometry().scale = 0.333;
+
         // create the two actors
         TPActor protagonist = MLUtil.makeLineActor(-50, 0, 50, 0, 200, 350);
-        protagonist.setColorGetter(new ColorMono(Color.RED));
-        protagonist.setVertexColorGetter(new ColorMono(Color.WHITE));
+        protagonist.setColorGetter(ColorMono.GREEN);
+        protagonist.setVertexColorGetter(ColorMono.WHITE);
         protagonist.name = PROTAGONIST_NAME;
         prog.addActor(protagonist);
         TPActor target = MLUtil.makeLineActor(0, -50, 0, 50, 800, 350);
-        target.setColorGetter(new ColorMono(Color.BLUE));
-        target.setVertexColorGetter(new ColorMono(Color.WHITE));
+        target.setColorGetter(ColorMono.RED);
+        target.setVertexColorGetter(ColorMono.WHITE);
         target.name = TARGET_NAME;
         prog.addActor(target);
 
@@ -160,18 +168,25 @@ public abstract class ToothpickTrainingParams {
         prog.setBGColor(new Color(50, 150, 100));
         prog.setSmearMode(true);
         prog.setShowIntersections(true);
+        // larger than usual play area
+        prog.getGeometry().setupAndCenter(3000, 2400);
+        prog.getGeometry().scale = 0.333;
         // create the protagonist
         TPActor a = MLUtil.makeLineActor(-50, 0, 50, 0, 200, 350);
         a.setBoundaryBehaviour(TPActor.BoundaryBehaviour.DIE_AT_BOUNDS);
-        a.setColorGetter(new ColorMono(Color.RED));
-        a.setVertexColorGetter(new ColorMono(Color.WHITE));
+        a.setColorGetter(ColorMono.GREEN);
+        a.setVertexColorGetter(ColorMono.WHITE);
         a.name = PROTAGONIST_NAME;
         prog.addActor(a);
         // set actor to new random position at beginning of each generation
-        PBRandActorSetup randSetup = new PBRandActorSetup();
-        randSetup.setTarget(PROTAGONIST_NAME);
-        randSetup.initBounds(prog.getGeometry());
-        prog.addResetBehaviour(randSetup);
+        PBMisc centerSetup = new PBMisc((TPProgram tpp) -> {
+                TPActor tpa = MLUtil.getHorizActor(tpp);
+                if (tpa != null) {
+                    tpa.x = tpp.getGeometry().getXCenter();
+                    tpa.y = tpp.getGeometry().getYCenter();
+                }
+        });
+        prog.addResetBehaviour(centerSetup);
 
         prog.init();
         prog.setResetSnapshot();

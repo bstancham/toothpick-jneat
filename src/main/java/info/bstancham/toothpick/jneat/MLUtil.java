@@ -68,7 +68,7 @@ public class MLUtil {
             step = 0.1;
         }
         // set color
-        ColorGetter vertexColor = new ColorMono(Color.WHITE);
+        ColorGetter vertexColor = ColorMono.WHITE;
         Color randColor = ColorGetter.randColor();
         for (int i = 0; i < num; i++) {
             brightness -= step;
@@ -76,6 +76,21 @@ public class MLUtil {
             prog.getActor(i).setColorGetter(new ColorMono(c));
             prog.getActor(i).setVertexColorGetter(vertexColor);
         }
+    }
+
+    /**
+     * Target is RED - so this sets any random color, but not too close to red.
+     */
+    public static void setActorColorNotRed(TPActor a) {
+        int r = randInt(100);
+        int g = randInt(255);
+        int b = randInt(255);
+        a.setColorGetter(new ColorMono(new Color(r, g, b)));
+        a.setVertexColorGetter(ColorMono.WHITE);
+    }
+
+    private static int randInt(int max) {
+        return (int) (Math.random() * max);
     }
 
     /** WARNING! Returns null if actor with name {@link HORIZ_NAME} does not exist. */
@@ -90,7 +105,7 @@ public class MLUtil {
 
     /** WARNING! Returns null if actor with name {@link TARGET_NAME} does not exist. */
     public static TPActor getTargetActor(TPProgram prog) {
-        return prog.getActor(ToothpickTrainingParams.TARGET_NAME);
+        return prog.getActor(TPTrainingParams.TARGET_NAME);
     }
 
     /**

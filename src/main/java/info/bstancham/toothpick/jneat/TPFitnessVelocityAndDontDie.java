@@ -12,7 +12,6 @@ public class TPFitnessVelocityAndDontDie extends ToothpickFitness {
     @Override
     public ToothpickFitness copy() {
         TPFitnessVelocityAndDontDie out = new TPFitnessVelocityAndDontDie();
-        // out.maxFitness = maxFitness;
         out.fitness = fitness;
         out.numIterations = numIterations;
         out.accumulatedFitness = accumulatedFitness;
@@ -22,14 +21,20 @@ public class TPFitnessVelocityAndDontDie extends ToothpickFitness {
     @Override
     public void updateFitness(TPProgram prog, TPActor a, TPActor target) {
         numIterations++;
-        if (a != null && target != null) {
+        if (a != null) {
             // if not alive, score nothing for this iteration
             if (a.isAlive()) {
-                double score = a.xInertia + a.yInertia;
+                // distance squared
+                double score = (a.xInertia * a.xInertia) + (a.yInertia * a.yInertia);
                 accumulatedFitness += score;
-                fitness = accumulatedFitness / numIterations;
             }
         }
+
+        if (accumulatedFitness > 0)
+            fitness = accumulatedFitness / numIterations;
+        else
+            fitness = 0;
+
     }
 
 }

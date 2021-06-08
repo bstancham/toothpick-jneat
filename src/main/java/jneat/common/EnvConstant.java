@@ -1,6 +1,6 @@
 package jneat.common;
 
-import info.bstancham.toothpick.jneat.ToothpickTrainingParams;
+import info.bstancham.toothpick.jneat.TPTrainingParams;
 
 /**
  * Environment constants?
@@ -59,7 +59,7 @@ public class EnvConstant {
     public static int SIMULATION_FROM_CLASS = 2;
     public static int SIMULATION_FROM_TOOTHPICK = 3;
     /** Used in conjunction with SIMULATION_FROM_TOOTHPICK. */
-    public static ToothpickTrainingParams TOOTHPICK_TRAINING_PARAMS = null;
+    public static TPTrainingParams TOOTHPICK_TRAINING_PARAMS = null;
 
     // public static String NAME_CURR_POPULATION = "xxx";
 

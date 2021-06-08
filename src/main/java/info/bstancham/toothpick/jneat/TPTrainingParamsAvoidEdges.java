@@ -28,10 +28,13 @@ import jneat.neat.Organism;
  * <li>thrust right</li>
  * </ul>
  */
-public class TPTrainingParamsAvoidEdges extends ToothpickTrainingParams {
+public class TPTrainingParamsAvoidEdges extends TPTrainingParams {
+
+    protected double inputScalingDistance = 1;
+    protected double inputScalingInertia = 10;
 
     public TPTrainingParamsAvoidEdges(TPBase base) {
-        super(base, "Avoid-Edges", "genome_in4_out4");
+        super(base, "Avoid-Edges", "genome_in6_out4");
     }
 
     /** WARNING! Returns null if actor with name {@link PROTAGONIST_NAME} does not exist. */
@@ -61,32 +64,46 @@ public class TPTrainingParamsAvoidEdges extends ToothpickTrainingParams {
 
     private void addInputs(NeuralNetworkController nnc) {
 
-        // (self) position, x
-        nnc.addInput((TPProgram prog) -> {
-                TPActor a = getProtagonist(prog);
-                if (a == null) return 0;
-                return a.x;
-            });
-
-        // (self) position, y
-        nnc.addInput((TPProgram prog) -> {
-                TPActor a = getProtagonist(prog);
-                if (a == null) return 0;
-                return a.y;
-            });
-
         // (self) inertia, x
         nnc.addInput((TPProgram prog) -> {
                 TPActor a = getProtagonist(prog);
                 if (a == null) return 0;
-                return a.xInertia;
+                return a.xInertia * inputScalingInertia;
             });
 
         // (self) inertia, y
         nnc.addInput((TPProgram prog) -> {
                 TPActor a = getProtagonist(prog);
                 if (a == null) return 0;
-                return a.yInertia;
+                return a.yInertia * inputScalingInertia;
+            });
+
+        // distance to left hand boundary
+        nnc.addInput((TPProgram prog) -> {
+                TPActor a = getProtagonist(prog);
+                if (a == null) return 0;
+                return a.x * inputScalingDistance;
+            });
+
+        // distance to right hand boundary
+        nnc.addInput((TPProgram prog) -> {
+                TPActor a = getProtagonist(prog);
+                if (a == null) return 0;
+                return (prog.getGeometry().getWidth() - a.x) * inputScalingDistance;
+            });
+
+        // distance to bottom boundary
+        nnc.addInput((TPProgram prog) -> {
+                TPActor a = getProtagonist(prog);
+                if (a == null) return 0;
+                return a.y * inputScalingDistance;
+            });
+
+        // distance to top boundary
+        nnc.addInput((TPProgram prog) -> {
+                TPActor a = getProtagonist(prog);
+                if (a == null) return 0;
+                return (prog.getGeometry().getHeight() - a.y) * inputScalingDistance;
             });
     }
 
