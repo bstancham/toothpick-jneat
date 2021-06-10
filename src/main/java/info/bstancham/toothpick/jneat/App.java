@@ -511,6 +511,7 @@ public class App {
     private TPMenu makeTrainingPlatformPrintInfoMenu(TPTrainingPlatform platform) {
         TPMenu m = new TPMenu(() -> "print diagnostic info");
         m.add(new TPMenuItemSimple("current fit-list", () -> platform.printFitList()));
+        m.add(new TPMenuItemSimple("neural network inputs", () -> platform.printNNInputs()));
         return m;
     }
 

@@ -12,7 +12,7 @@ public class NeuralNetworkController implements ActorBehaviour {
 
     private ActorControllerUDLR controller = null;
     private Network net = null;
-    private List<NNInput> inputs = new ArrayList<>();
+    public List<NNInput> inputs = new ArrayList<>();
     private List<NNOutput> outputs = new ArrayList<>();
     private boolean printDebugInfo = false;
 

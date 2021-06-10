@@ -30,8 +30,17 @@ import jneat.neat.Organism;
  */
 public class TPTrainingParamsSeek extends TPTrainingParams {
 
-    protected double inputScalingDistance = 0.1;
-    protected double inputScalingInertia = 50;
+    protected static double inputScalingDistance = 0.1;
+    protected static double inputScalingInertia = 50;
+
+    private static NNInput INPUT_SELF_INERTIA_X
+        = new NNInputInertia(getProtagonistID(), inputScalingInertia, NNInput.Dim.X);
+    private static NNInput INPUT_SELF_INERTIA_Y
+        = new NNInputInertia(getProtagonistID(), inputScalingInertia, NNInput.Dim.Y);
+    private static NNInput INPUT_RELATIVE_POSITION_X
+        = new NNInputRelativePosition(getProtagonistID(), getTargetID(), inputScalingDistance, NNInput.Dim.X);
+    private static NNInput INPUT_RELATIVE_POSITION_Y
+        = new NNInputRelativePosition(getProtagonistID(), getTargetID(), inputScalingDistance, NNInput.Dim.Y);
 
     public TPTrainingParamsSeek(TPBase base) {
         this(base, "Seek", "genome_in4_out4");
@@ -62,40 +71,10 @@ public class TPTrainingParamsSeek extends TPTrainingParams {
     }
 
     protected void addInputs(NeuralNetworkController nnc) {
-
-        // (target) relative position, x
-        nnc.addInput((TPProgram prog) -> {
-                TPActor self = MLUtil.getHorizActor(prog);
-                TPActor target = MLUtil.getVertActor(prog);
-                if (self == null || target == null)
-                    return 0;
-                return getGeometry().xDistWrapped(self.x, target.x)
-                    * inputScalingDistance;
-            });
-
-        // (target) relative position, y
-        nnc.addInput((TPProgram prog) -> {
-                TPActor self = MLUtil.getHorizActor(prog);
-                TPActor target = MLUtil.getVertActor(prog);
-                if (self == null || target == null)
-                    return 0;
-                return getGeometry().yDistWrapped(self.y, target.y)
-                    * inputScalingDistance;
-            });
-
-        // (self) inertia, x
-        nnc.addInput((TPProgram prog) -> {
-                TPActor self = MLUtil.getHorizActor(prog);
-                if (self == null) return 0;
-                return self.xInertia * inputScalingInertia;
-            });
-
-        // (self) inertia, y
-        nnc.addInput((TPProgram prog) -> {
-                TPActor self = MLUtil.getHorizActor(prog);
-                if (self == null) return 0;
-                return self.yInertia * inputScalingInertia;
-            });
+        nnc.addInput(INPUT_SELF_INERTIA_X);
+        nnc.addInput(INPUT_SELF_INERTIA_Y);
+        nnc.addInput(INPUT_RELATIVE_POSITION_X);
+        nnc.addInput(INPUT_RELATIVE_POSITION_Y);
     }
 
     private void addOutputs(NeuralNetworkController nnc, ActorControllerUDLR ac) {

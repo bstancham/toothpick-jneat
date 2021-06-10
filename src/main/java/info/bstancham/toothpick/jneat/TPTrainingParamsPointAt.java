@@ -27,6 +27,16 @@ import jneat.neat.Organism;
  */
 public class TPTrainingParamsPointAt extends TPTrainingParams {
 
+    protected static double inputScalingAngle = 1.0;
+    protected static double inputScalingDistance = 0.1;
+
+    private static NNInput INPUT_SELF_ANGLE
+        = new NNInputAngle(getProtagonistID(), inputScalingAngle);
+    private static NNInput INPUT_RELATIVE_POSITION_X
+        = new NNInputRelativePosition(getProtagonistID(), getTargetID(), inputScalingDistance, NNInput.Dim.X);
+    private static NNInput INPUT_RELATIVE_POSITION_Y
+        = new NNInputRelativePosition(getProtagonistID(), getTargetID(), inputScalingDistance, NNInput.Dim.Y);
+
     public TPTrainingParamsPointAt(TPBase base) {
         super(base, "Point-At", "genome_in3_out2");
     }
@@ -52,32 +62,9 @@ public class TPTrainingParamsPointAt extends TPTrainingParams {
     }
 
     private void addInputs(NeuralNetworkController nnc) {
-
-        // (self) angle
-        nnc.addInput((TPProgram prog) -> {
-                TPActor a = MLUtil.getHorizActor(prog);
-                if (a == null)
-                    return 0;
-                return a.angle;
-            });
-
-        // (target) relative position, x
-        nnc.addInput((TPProgram prog) -> {
-                TPActor self = MLUtil.getHorizActor(prog);
-                TPActor target = MLUtil.getVertActor(prog);
-                if (self == null || self == null)
-                    return 0;
-                return target.x - self.x;
-            });
-
-        // (target) relative position, y
-        nnc.addInput((TPProgram prog) -> {
-                TPActor self = MLUtil.getHorizActor(prog);
-                TPActor target = MLUtil.getVertActor(prog);
-                if (self == null || self == null)
-                    return 0;
-                return target.y - self.y;
-            });
+        nnc.addInput(INPUT_SELF_ANGLE);
+        nnc.addInput(INPUT_RELATIVE_POSITION_X);
+        nnc.addInput(INPUT_RELATIVE_POSITION_Y);
     }
 
     private void addOutputs(NeuralNetworkController nnc, ActorControllerUDLR ac) {

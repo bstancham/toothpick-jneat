@@ -73,6 +73,10 @@ public abstract class TPTrainingParams {
         masterFitness = makeFitness();
     }
 
+    public static String getProtagonistID() { return PROTAGONIST_NAME; }
+
+    public static String getTargetID() { return TARGET_NAME; }
+
     public TPBase getBase() { return base; }
 
     public TPGeometry getGeometry() { return masterProg.getGeometry(); }

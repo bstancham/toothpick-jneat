@@ -1,8 +1,8 @@
 package info.bstancham.toothpick.jneat;
 
+import info.bschambers.toothpick.PBRandActorSetup;
 import info.bschambers.toothpick.TPBase;
 import info.bschambers.toothpick.TPProgram;
-import info.bschambers.toothpick.PBRandActorSetup;
 import info.bschambers.toothpick.actor.*;
 import java.awt.Color;
 import java.util.ArrayList;
@@ -30,16 +30,30 @@ import jneat.neat.Organism;
  */
 public class TPTrainingParamsAvoidEdges extends TPTrainingParams {
 
-    protected double inputScalingDistance = 1;
-    protected double inputScalingInertia = 10;
+    protected static double inputScalingDistance = 0.01;
+    protected static double inputScalingInertia = 10;
+
+    private static NNInput INPUT_SELF_INERTIA_X
+        = new NNInputInertia(getProtagonistID(), inputScalingInertia, NNInput.Dim.X);
+    private static NNInput INPUT_SELF_INERTIA_Y
+        = new NNInputInertia(getProtagonistID(), inputScalingInertia, NNInput.Dim.Y);
+    private static NNInput INPUT_SELF_BOUNDARY_DIST_LEFT
+        = new NNInputBoundaryDist(getProtagonistID(), inputScalingDistance, NNInput.Dir.LEFT);
+    private static NNInput INPUT_SELF_BOUNDARY_DIST_RIGHT
+        = new NNInputBoundaryDist(getProtagonistID(), inputScalingDistance, NNInput.Dir.RIGHT);
+    private static NNInput INPUT_SELF_BOUNDARY_DIST_BOTTOM
+        = new NNInputBoundaryDist(getProtagonistID(), inputScalingDistance, NNInput.Dir.BOTTOM);
+    private static NNInput INPUT_SELF_BOUNDARY_DIST_TOP
+        = new NNInputBoundaryDist(getProtagonistID(), inputScalingDistance, NNInput.Dir.TOP);
 
     public TPTrainingParamsAvoidEdges(TPBase base) {
         super(base, "Avoid-Edges", "genome_in6_out4");
     }
 
     /** WARNING! Returns null if actor with name {@link PROTAGONIST_NAME} does not exist. */
+    @Deprecated
     public static TPActor getProtagonist(TPProgram prog) {
-        return MLUtil.getHorizActor(prog);
+        return prog.getActor(getProtagonistID());
     }
 
     @Override
@@ -63,48 +77,12 @@ public class TPTrainingParamsAvoidEdges extends TPTrainingParams {
     }
 
     private void addInputs(NeuralNetworkController nnc) {
-
-        // (self) inertia, x
-        nnc.addInput((TPProgram prog) -> {
-                TPActor a = getProtagonist(prog);
-                if (a == null) return 0;
-                return a.xInertia * inputScalingInertia;
-            });
-
-        // (self) inertia, y
-        nnc.addInput((TPProgram prog) -> {
-                TPActor a = getProtagonist(prog);
-                if (a == null) return 0;
-                return a.yInertia * inputScalingInertia;
-            });
-
-        // distance to left hand boundary
-        nnc.addInput((TPProgram prog) -> {
-                TPActor a = getProtagonist(prog);
-                if (a == null) return 0;
-                return a.x * inputScalingDistance;
-            });
-
-        // distance to right hand boundary
-        nnc.addInput((TPProgram prog) -> {
-                TPActor a = getProtagonist(prog);
-                if (a == null) return 0;
-                return (prog.getGeometry().getWidth() - a.x) * inputScalingDistance;
-            });
-
-        // distance to bottom boundary
-        nnc.addInput((TPProgram prog) -> {
-                TPActor a = getProtagonist(prog);
-                if (a == null) return 0;
-                return a.y * inputScalingDistance;
-            });
-
-        // distance to top boundary
-        nnc.addInput((TPProgram prog) -> {
-                TPActor a = getProtagonist(prog);
-                if (a == null) return 0;
-                return (prog.getGeometry().getHeight() - a.y) * inputScalingDistance;
-            });
+        nnc.addInput(INPUT_SELF_INERTIA_X);
+        nnc.addInput(INPUT_SELF_INERTIA_Y);
+        nnc.addInput(INPUT_SELF_BOUNDARY_DIST_LEFT);
+        nnc.addInput(INPUT_SELF_BOUNDARY_DIST_RIGHT);
+        nnc.addInput(INPUT_SELF_BOUNDARY_DIST_TOP);
+        nnc.addInput(INPUT_SELF_BOUNDARY_DIST_BOTTOM);
     }
 
     private void addOutputs(NeuralNetworkController nnc, ActorControllerUDLR ac) {

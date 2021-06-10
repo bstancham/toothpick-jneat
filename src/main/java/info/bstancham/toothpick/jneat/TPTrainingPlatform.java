@@ -280,4 +280,14 @@ public class TPTrainingPlatform extends TPSimultaneousPlatform {
             System.out.println(n++ + ": fitness=" + tpo.org.getFitness() + " (" + tpo + ")");
     }
 
+    public void printNNInputs() {
+        TPTrainingParams params = getParams();
+        if (params.numTPOrganisms() > 0) {
+            NeuralNetworkController nnc = params.getTPOrganism(0).controller;
+            System.out.println("\nNEURAL NETWORK INPUTS: " + params.getClass().getSimpleName());
+            for (NNInput input : nnc.inputs)
+                System.out.println("\n" + input.generateReport());
+        }
+    }
+
 }
