@@ -56,8 +56,6 @@ public abstract class TPTrainingParams {
      */
     protected TPProgram masterProg;
 
-    private ToothpickFitness masterFitness;
-
     public List<TPOrganism> organisms = new ArrayList<>();
 
     public TPTrainingParams(TPBase base, String label, String genomeFilename) {
@@ -65,12 +63,10 @@ public abstract class TPTrainingParams {
         this.label = label;
         this.genomeFilename = genomeFilename;
         masterProg = makeMasterProgram();
-        masterFitness = makeFitness();
     }
 
     public void init() {
         masterProg = makeMasterProgram();
-        masterFitness = makeFitness();
     }
 
     public static String getProtagonistID() { return PROTAGONIST_NAME; }
@@ -117,7 +113,7 @@ public abstract class TPTrainingParams {
 
     public TPOrganism newTPOrganism(Organism org) {
         TPOrganism tpOrg = new TPOrganism(org, makeProgramCopy(),
-                                          makeController(), masterFitness.copy());
+                                          makeController(), makeFitness());
         return tpOrg;
     }
 
@@ -141,8 +137,12 @@ public abstract class TPTrainingParams {
         prog.setShowIntersections(true);
 
         // larger than usual play area
-        prog.getGeometry().setupAndCenter(3000, 2400);
-        prog.getGeometry().scale = 0.333;
+        // prog.getGeometry().setupAndCenter(3000, 2400);
+        // prog.getGeometry().scale = 0.333;
+        // prog.getGeometry().setupAndCenter(6000, 4800);
+        // prog.getGeometry().scale = 0.15;
+        prog.getGeometry().setupAndCenter(12000, 9600);
+        prog.getGeometry().scale = 0.075;
 
         // create the two actors
         TPActor protagonist = MLUtil.makeLineActor(-50, 0, 50, 0, 200, 350);
@@ -173,8 +173,12 @@ public abstract class TPTrainingParams {
         prog.setSmearMode(true);
         prog.setShowIntersections(true);
         // larger than usual play area
-        prog.getGeometry().setupAndCenter(3000, 2400);
-        prog.getGeometry().scale = 0.333;
+        // prog.getGeometry().setupAndCenter(3000, 2400);
+        // prog.getGeometry().scale = 0.333;
+        prog.getGeometry().setupAndCenter(6000, 4800);
+        prog.getGeometry().scale = 0.15;
+        // prog.getGeometry().setupAndCenter(12000, 9600);
+        // prog.getGeometry().scale = 0.075;
         // create the protagonist
         TPActor a = MLUtil.makeLineActor(-50, 0, 50, 0, 200, 350);
         a.setBoundaryBehaviour(TPActor.BoundaryBehaviour.DIE_AT_BOUNDS);

@@ -24,7 +24,8 @@ public class TPFitnessVelocityAndDontDie extends ToothpickFitness {
         if (a != null) {
             // if not alive, score nothing for this iteration
             if (a.isAlive()) {
-                // distance squared
+                // distance squared (pythagoras theorem)
+                // ... always positive - multiplying same sign, result is always positive
                 double score = (a.xInertia * a.xInertia) + (a.yInertia * a.yInertia);
                 accumulatedFitness += score;
             }
