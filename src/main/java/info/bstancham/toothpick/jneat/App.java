@@ -280,7 +280,7 @@ public class App {
                                  () -> "" + ttParams.iterationsPerGeneration,
                                  () -> incrIterations(ttParams, -100),
                                  () -> incrIterations(ttParams, 100)));
-        m.add(makeMenuTargetChooser(ttParams));
+        m.add(makeMenuSetupChooser(ttParams));
         return m;
     }
 
@@ -515,22 +515,21 @@ public class App {
         return m;
     }
 
-    private TPMenu makeMenuTargetChooser(TPTrainingParams ttParams) {
-        TPMenu m = new TPMenu(() -> "target: " + ttParams.getTargetSetupLabel());
-        m.add(makeTargetChooserItem(ttParams, new TargetSetupStatic()));
-        m.add(makeTargetChooserItem(ttParams, new TargetSetupStaticTeleport()));
-        m.add(makeTargetChooserItem(ttParams, new TargetSetupMobile()));
-        m.add(makeTargetChooserItem(ttParams, new TargetSetupMobileChangeDir()));
-        m.add(makeTargetChooserItem(ttParams, new TargetSetupMobileTeleport()));
-        m.add(makeTargetChooserItem(ttParams, new TargetSetupPlayer1()));
+    private TPMenu makeMenuSetupChooser(TPTrainingParams ttParams) {
+        TPMenu m = new TPMenu(() -> "actor setup: " + ttParams.getActorSetupLabel());
+        m.add(makeSetupChooserItem(ttParams, new ActorSetupStatic()));
+        m.add(makeSetupChooserItem(ttParams, new ActorSetupStaticTeleport()));
+        m.add(makeSetupChooserItem(ttParams, new ActorSetupMobile()));
+        m.add(makeSetupChooserItem(ttParams, new ActorSetupMobileTeleport()));
+        m.add(makeSetupChooserItem(ttParams, new ActorSetupMobileChangeDir()));
+        m.add(makeSetupChooserItem(ttParams, new ActorSetupPlayer1()));
         return m;
     }
 
-    private TPMenuItem makeTargetChooserItem(TPTrainingParams ttParams,
-                                             TargetSetup setup) {
+    private TPMenuItem makeSetupChooserItem(TPTrainingParams ttParams, ActorSetup setup) {
         return new TPMenuItemSimple(setup.getLabel(), () -> {
-                ttParams.targetSetup = setup;
-                System.out.println("new target-setup: " + ttParams.getTargetSetupLabel());
+                ttParams.actorSetup = setup;
+                System.out.println("new actor-setup: " + ttParams.getActorSetupLabel());
         });
     }
 

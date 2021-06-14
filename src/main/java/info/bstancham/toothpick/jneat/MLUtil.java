@@ -81,12 +81,21 @@ public class MLUtil {
     /**
      * Target is RED - so this sets any random color, but not too close to red.
      */
-    public static void setActorColorNotRed(TPActor a) {
-        int r = randInt(100);
-        int g = randInt(255);
-        int b = randInt(255);
+    public static void setActorColorNotRed(TPActor a, boolean vertexColor) {
+        int r = 0;
+        int g = 0;
+        int b = 0;
+        // make sure that color is not too close to black
+        while (r + g + b < 70) {
+            r = randInt(100);
+            g = randInt(255);
+            b = randInt(255);
+        }
         a.setColorGetter(new ColorMono(new Color(r, g, b)));
-        a.setVertexColorGetter(ColorMono.WHITE);
+        if (vertexColor)
+            a.setVertexColorGetter(ColorMono.WHITE);
+        else
+            a.setVertexColorGetter(null);
     }
 
     private static int randInt(int max) {

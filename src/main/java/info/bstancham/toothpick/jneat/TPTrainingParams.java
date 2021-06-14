@@ -43,8 +43,8 @@ public abstract class TPTrainingParams {
     public int iterationsPerGeneration = 3000;
 
     /** Manages the target-actor throughout the running of a generation. */
-    public TargetSetup targetSetup = new TargetSetupStatic();
-    public String getTargetSetupLabel() { return targetSetup.getLabel(); }
+    public ActorSetup actorSetup = new ActorSetupStatic();
+    public String getActorSetupLabel() { return actorSetup.getLabel(); }
 
     /**
      * <p>The master-program - an identical copy of this program is made for each of the
@@ -106,7 +106,7 @@ public abstract class TPTrainingParams {
         TPProgram p = new TPProgram(masterProg.getResetSnapshot());
         TPActor horiz = MLUtil.getHorizActor(p);
         if (horiz != null)
-            MLUtil.setActorColorNotRed(horiz);
+            MLUtil.setActorColorNotRed(horiz, false);
         p.setResetSnapshot();
         return p;
     }
@@ -155,12 +155,6 @@ public abstract class TPTrainingParams {
         target.setVertexColorGetter(ColorMono.WHITE);
         target.name = TARGET_NAME;
         prog.addActor(target);
-
-        // set both actors to new random position at beginning of each generation
-        PBRandActorSetup randDroneSetup = new PBRandActorSetup();
-        randDroneSetup.setTarget(PROTAGONIST_NAME, TARGET_NAME);
-        randDroneSetup.initBounds(prog.getGeometry());
-        prog.addResetBehaviour(randDroneSetup);
 
         prog.init();
         prog.setResetSnapshot();

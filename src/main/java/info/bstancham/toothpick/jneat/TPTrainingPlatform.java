@@ -109,12 +109,12 @@ public class TPTrainingPlatform extends TPSimultaneousPlatform {
     }
 
     private void initGeneration() {
-        ttParams.targetSetup.init(ttParams);
         discardAllPrograms();
         ttParams.nextGeneration(ep.pop.organisms);
         for (int i = 0; i < ep.pop.organisms.size(); i++) {
             addProgram(ttParams.getTPOrganism(i).program);
         }
+        ttParams.actorSetup.init(ttParams);
         generationFirstWinner = null;
         // turn off smear-mode (just for first iteration)
         savedSmearMode = isSmearMode();
@@ -166,7 +166,7 @@ public class TPTrainingPlatform extends TPSimultaneousPlatform {
         }
 
         super.update();
-        ttParams.targetSetup.update(ttParams);
+        ttParams.actorSetup.update(ttParams);
 
         if (mode == Mode.TRAINING) {
             updateTRAINING();
