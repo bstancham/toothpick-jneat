@@ -264,6 +264,7 @@ public class App {
         m.add(makeMenuTPTraining(new TPTrainingParamsSeekIn6Out4(base)));
         m.add(makeMenuTPTraining(new TPTrainingParamsSeekIn6Out4FitPlus(base)));
         m.add(makeMenuTPTraining(new TPTrainingParamsAvoidEdges(base)));
+        m.add(makeMenuTPTraining(new TPTrainingParamsThrustSeek(base)));
         return m;
     }
 

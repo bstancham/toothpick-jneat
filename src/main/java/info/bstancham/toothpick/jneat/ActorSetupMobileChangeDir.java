@@ -29,7 +29,6 @@ public class ActorSetupMobileChangeDir implements ActorSetup {
         double ay = 0;
 
         if (ttParams.organisms.size() > 0) {
-            // TPProgram prog = ttParams.getTPOrganism(0).program;
             ax = Math.random() * ttParams.getGeometry().getWidth();
             ay = Math.random() * ttParams.getGeometry().getHeight();
         }
@@ -47,7 +46,6 @@ public class ActorSetupMobileChangeDir implements ActorSetup {
             TPProgram prog = tpOrg.program;
             TPActor a = prog.getActor(TPTrainingParams.getProtagonistID());
             TPActor target = prog.getActor(TPTrainingParams.getTargetID());
-            // if (a != null && target != null) {
             if (a == null) {
                 System.out.println("ActorSetupMobileChangeDir: a=null");
             } else if (target == null) {

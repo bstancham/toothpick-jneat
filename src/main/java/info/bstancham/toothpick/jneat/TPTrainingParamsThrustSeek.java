@@ -10,6 +10,9 @@ import java.util.List;
 import jneat.neat.Organism;
 
 /**
+
+
+
  * <p>Controller has 4 inputs and 4 outputs:</p>
  *
  * <p>INPUTS:</p>
@@ -18,36 +21,36 @@ import jneat.neat.Organism;
  * <li>(target) relative position, y</li>
  * <li>(self) velocity, x</li>
  * <li>(self) velocity, y</li>
+ * <li>(self) angle</li>
  * </ul>
  *
  * <p>OUTPUTS:</p>
  * <ul>
  * <li>thrust up</li>
  * <li>thrust down</li>
- * <li>thrust left</li>
- * <li>thrust right</li>
+ * <li>rotate left</li>
+ * <li>rotate right</li>
  * </ul>
  */
-public class TPTrainingParamsSeek extends TPTrainingParams {
+public class TPTrainingParamsThrustSeek extends TPTrainingParams {
 
     protected static double inputScalingDistance = 0.1;
     protected static double inputScalingInertia = 50;
+    protected static double inputScalingAngle = 1;
 
-    private static NNInput INPUT_SELF_INERTIA_X
-        = new NNInputInertia(getProtagonistID(), inputScalingInertia, NNInput.Dim.X);
-    private static NNInput INPUT_SELF_INERTIA_Y
-        = new NNInputInertia(getProtagonistID(), inputScalingInertia, NNInput.Dim.Y);
     private static NNInput INPUT_RELATIVE_POSITION_X
         = new NNInputRelativePosition(getProtagonistID(), getTargetID(), inputScalingDistance, NNInput.Dim.X);
     private static NNInput INPUT_RELATIVE_POSITION_Y
         = new NNInputRelativePosition(getProtagonistID(), getTargetID(), inputScalingDistance, NNInput.Dim.Y);
+    private static NNInput INPUT_SELF_INERTIA_X
+        = new NNInputInertia(getProtagonistID(), inputScalingInertia, NNInput.Dim.X);
+    private static NNInput INPUT_SELF_INERTIA_Y
+        = new NNInputInertia(getProtagonistID(), inputScalingInertia, NNInput.Dim.Y);
+    private static NNInput INPUT_SELF_ANGLE
+        = new NNInputAngle(getProtagonistID(), inputScalingAngle);
 
-    public TPTrainingParamsSeek(TPBase base) {
-        this(base, "Seek (in=4, out=4)", "genome_in4_out4");
-    }
-
-    public TPTrainingParamsSeek(TPBase base, String label, String genomeFilename) {
-        super(base, label, genomeFilename);
+    public TPTrainingParamsThrustSeek(TPBase base) {
+        super(base, "Thrust-Controller Seek (in=5, out=4)", "genome_in5_out4");
     }
 
     @Override
@@ -63,7 +66,7 @@ public class TPTrainingParamsSeek extends TPTrainingParams {
     @Override
     protected NeuralNetworkController makeController() {
         NeuralNetworkController nnc = new NeuralNetworkController();
-        ActorController8WayInertia ac = new ActorController8WayInertia();
+        ActorControllerThrustInertia ac = new ActorControllerThrustInertia();
         nnc.setActorController(ac);
         addInputs(nnc);
         addOutputs(nnc, ac);
@@ -71,10 +74,11 @@ public class TPTrainingParamsSeek extends TPTrainingParams {
     }
 
     protected void addInputs(NeuralNetworkController nnc) {
-        nnc.addInput(INPUT_SELF_INERTIA_X);
-        nnc.addInput(INPUT_SELF_INERTIA_Y);
         nnc.addInput(INPUT_RELATIVE_POSITION_X);
         nnc.addInput(INPUT_RELATIVE_POSITION_Y);
+        nnc.addInput(INPUT_SELF_INERTIA_X);
+        nnc.addInput(INPUT_SELF_INERTIA_Y);
+        nnc.addInput(INPUT_SELF_ANGLE);
     }
 
     private void addOutputs(NeuralNetworkController nnc, ActorControllerUDLR ac) {

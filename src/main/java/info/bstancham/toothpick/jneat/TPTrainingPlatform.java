@@ -115,6 +115,11 @@ public class TPTrainingPlatform extends TPSimultaneousPlatform {
             addProgram(ttParams.getTPOrganism(i).program);
         }
         ttParams.actorSetup.init(ttParams);
+        // set snapshot, so that resetGeneration will work nicely
+        for (int i = 0; i < numPrograms(); i++) {
+            TPProgram prog = getProgram(i);
+            prog.setResetSnapshot();
+        }
         generationFirstWinner = null;
         // turn off smear-mode (just for first iteration)
         savedSmearMode = isSmearMode();
