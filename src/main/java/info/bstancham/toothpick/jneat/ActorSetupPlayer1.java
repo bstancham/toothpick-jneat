@@ -1,7 +1,5 @@
 package info.bstancham.toothpick.jneat;
 
-import info.bschambers.toothpick.TPProgram;
-import info.bschambers.toothpick.actor.TPActor;
 import info.bschambers.toothpick.actor.TPPlayer;
 import info.bschambers.toothpick.actor.KeyInputHandler;
 import info.bschambers.toothpick.actor.KeyInputThrustInertia;
@@ -24,13 +22,14 @@ public class ActorSetupPlayer1 extends ActorSetupStatic {
         super.init(ttParams);
         // add key-input controller to each target-actor
         for (TPOrganism tpOrg : ttParams.organisms) {
-            TPActor target = MLUtil.getTargetActor(tpOrg.program);
-            if (target != null) {
+            if (fetchTarget(ttParams, tpOrg.program)) {
                 tpOrg.program.clearPlayers();
                 TPPlayer player = new TPPlayer();
                 player.setInputHandler(inputHandler);
                 player.setActor(target);
                 tpOrg.program.addPlayer(player);
+
+                tpOrg.setResetSnapshot();
             }
         }
     }

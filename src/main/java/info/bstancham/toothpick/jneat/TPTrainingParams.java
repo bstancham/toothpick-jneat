@@ -69,6 +69,10 @@ public abstract class TPTrainingParams {
         masterProg = makeMasterProgram();
     }
 
+    public void log(String message) {
+        System.out.println(message);
+    }
+
     public static String getProtagonistID() { return PROTAGONIST_NAME; }
 
     public static String getTargetID() { return TARGET_NAME; }
@@ -141,8 +145,10 @@ public abstract class TPTrainingParams {
         // prog.getGeometry().scale = 0.333;
         // prog.getGeometry().setupAndCenter(6000, 4800);
         // prog.getGeometry().scale = 0.15;
-        prog.getGeometry().setupAndCenter(12000, 9600);
-        prog.getGeometry().scale = 0.075;
+        // prog.getGeometry().setupAndCenter(12000, 9600);
+        // prog.getGeometry().scale = 0.075;
+        prog.getGeometry().setupAndCenter(24000, 19200);
+        prog.getGeometry().scale = 0.0375;
 
         // create the two actors
         TPActor protagonist = MLUtil.makeLineActor(-50, 0, 50, 0, 200, 350);
@@ -169,9 +175,11 @@ public abstract class TPTrainingParams {
         // larger than usual play area
         // prog.getGeometry().setupAndCenter(3000, 2400);
         // prog.getGeometry().scale = 0.333;
-        prog.getGeometry().setupAndCenter(6000, 4800);
+        // prog.getGeometry().setupAndCenter(6000, 4800);
+        prog.getGeometry().setupAndCenter(6000, 3000);
         prog.getGeometry().scale = 0.15;
         // prog.getGeometry().setupAndCenter(12000, 9600);
+        // prog.getGeometry().setupAndCenter(12000, 6000);
         // prog.getGeometry().scale = 0.075;
         // create the protagonist
         TPActor a = MLUtil.makeLineActor(-50, 0, 50, 0, 200, 350);

@@ -27,7 +27,7 @@ public class TPFitnessVelocityAndDontDie extends ToothpickFitness {
                 // distance squared (pythagoras theorem)
                 // ... always positive - multiplying same sign, result is always positive
                 double score = (a.xInertia * a.xInertia) + (a.yInertia * a.yInertia);
-                accumulatedFitness += score;
+                accumulatedFitness += score * score;
             }
         }
 

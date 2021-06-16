@@ -48,6 +48,7 @@ public class TPTrainingParamsAvoidEdges extends TPTrainingParams {
 
     public TPTrainingParamsAvoidEdges(TPBase base) {
         super(base, "Avoid-Edges", "genome_in6_out4");
+        actorSetup = new ActorSetupAllCenter();
     }
 
     /** WARNING! Returns null if actor with name {@link PROTAGONIST_NAME} does not exist. */

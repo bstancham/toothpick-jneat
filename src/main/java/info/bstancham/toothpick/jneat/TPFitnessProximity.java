@@ -4,7 +4,7 @@ import info.bschambers.toothpick.TPProgram;
 import info.bschambers.toothpick.actor.TPActor;
 
 /**
- * Fitness defined as proximity to the target actor, averaged over the total number of
+ * Fitness defined as proximity to the TARGET actor, averaged over the total number of
  * iterations so far.
  */
 public class TPFitnessProximity extends ToothpickFitness {
@@ -13,15 +13,13 @@ public class TPFitnessProximity extends ToothpickFitness {
     public void updateFitness(TPProgram prog, TPActor a, TPActor target) {
         numIterations++;
         if (a != null && target != null) {
-            double width = prog.getGeometry().getWidth();
-            double height = prog.getGeometry().getHeight();
             double xDist = Math.abs(prog.getGeometry().xDistWrapped(a.x, target.x));
             double yDist = Math.abs(prog.getGeometry().yDistWrapped(a.y, target.y));
-            double xFraction = width  - xDist;
-            double yFraction = height - yDist;
+            double xFraction = prog.getGeometry().getWidth() - xDist;
+            double yFraction = prog.getGeometry().getHeight() - yDist;
             // proximity, as fraction of play-area size
-            double xProx = xFraction / width;
-            double yProx = yFraction / height;
+            double xProx = xFraction / prog.getGeometry().getWidth();
+            double yProx = yFraction / prog.getGeometry().getHeight();
             accumulatedFitness += (xProx + yProx);
             fitness = accumulatedFitness / numIterations;
         }

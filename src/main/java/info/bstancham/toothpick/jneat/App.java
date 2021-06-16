@@ -518,11 +518,12 @@ public class App {
 
     private TPMenu makeMenuSetupChooser(TPTrainingParams ttParams) {
         TPMenu m = new TPMenu(() -> "actor setup: " + ttParams.getActorSetupLabel());
+        m.add(makeSetupChooserItem(ttParams, new ActorSetupAllCenter()));
         m.add(makeSetupChooserItem(ttParams, new ActorSetupStatic()));
         m.add(makeSetupChooserItem(ttParams, new ActorSetupStaticTeleport()));
         m.add(makeSetupChooserItem(ttParams, new ActorSetupMobile()));
         m.add(makeSetupChooserItem(ttParams, new ActorSetupMobileTeleport()));
-        m.add(makeSetupChooserItem(ttParams, new ActorSetupMobileChangeDir()));
+        m.add(makeSetupChooserItem(ttParams, new ActorSetupMobileTargetChangeDir()));
         m.add(makeSetupChooserItem(ttParams, new ActorSetupPlayer1()));
         return m;
     }

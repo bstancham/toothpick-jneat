@@ -1,7 +1,5 @@
 package info.bstancham.toothpick.jneat;
 
-import info.bschambers.toothpick.actor.TPActor;
-
 /**
  * PROTAGONIST and TARGET both init to random position, TARGET moves in a straight line in
  * a randomly chosen direction.
@@ -21,12 +19,10 @@ public class ActorSetupMobile extends ActorSetupStatic {
         double xInertia = randInertia();
         double yInertia = randInertia();
         for (TPOrganism tpOrg : ttParams.organisms) {
-            TPActor target = tpOrg.program.getActor(TPTrainingParams.getTargetID());
-            if (target == null) {
-                    System.out.println("ActorSetupMobile: TARGET is NULL!");
-            } else {
+            if (fetchTarget(ttParams, tpOrg.program)) {
                 target.xInertia = xInertia;
                 target.yInertia = yInertia;
+                tpOrg.setResetSnapshot();
             }
         }
     }

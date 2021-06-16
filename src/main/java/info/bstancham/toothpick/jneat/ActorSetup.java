@@ -1,14 +1,52 @@
 package info.bstancham.toothpick.jneat;
 
+import info.bschambers.toothpick.TPProgram;
+import info.bschambers.toothpick.actor.TPActor;
+
 /**
- * Setup actors during a training session.
+ * Setup actors before a training session and then manage them during.
  */
-public interface ActorSetup {
+public abstract class ActorSetup {
 
-    public String getLabel();
+    protected TPActor protagonist = null;
+    protected TPActor target = null;
 
-    public void init(TPTrainingParams ttParams);
+    /** Returns name of class - child classes may want to override.*/
+    public String getLabel() {
+        return getClass().getSimpleName();
+    }
 
-    public void update(TPTrainingParams ttParams);
+    /**
+     * Attempts to fetch PROTAGONIST actor from {@code prog} and store it in
+     * {@link protagonist}.
+     * @return True, if successful, false otherwise.
+     */
+    protected boolean fetchProtagonist(TPTrainingParams ttParams, TPProgram prog) {
+        protagonist = prog.getActor(TPTrainingParams.getProtagonistID());
+        if (protagonist == null) {
+            ttParams.log(getClass().getSimpleName() + ".fetchProtagonist: NOT FOUND!");
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    /**
+     * Attempts to fetch TARGET actor from {@code prog} and store it in {@link target}.
+     * @return True, if successful, false otherwise.
+     */
+    protected boolean fetchTarget(TPTrainingParams ttParams, TPProgram prog) {
+        target = prog.getActor(TPTrainingParams.getTargetID());
+        if (target == null) {
+            ttParams.log(getClass().getSimpleName() + ".fetchTarget: NOT FOUND!");
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    public abstract void init(TPTrainingParams ttParams);
+
+    public abstract void update(TPTrainingParams ttParams);
 
 }

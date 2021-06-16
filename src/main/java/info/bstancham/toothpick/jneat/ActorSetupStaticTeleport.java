@@ -24,8 +24,7 @@ public class ActorSetupStaticTeleport extends ActorSetupStatic {
             double x = Math.random() * ttParams.getGeometry().getWidth();
             double y = Math.random() * ttParams.getGeometry().getHeight();
             for (TPOrganism tpOrg : ttParams.organisms) {
-                TPActor target = MLUtil.getTargetActor(tpOrg.program);
-                if (target != null) {
+                if (fetchTarget(ttParams, tpOrg.program)) {
                     target.x = x;
                     target.y = y;
                 }

@@ -23,8 +23,7 @@ public class TPOrganism {
         this.fitFunc = fitFunc;
         controller.setNetwork(org.net);
         getActor().addBehaviour(controller);
-        for (TPActor a : program)
-            initActors.add(a.copy());
+        setResetSnapshot();
     }
 
     public boolean isWinner() { return org.winner; }
@@ -32,7 +31,7 @@ public class TPOrganism {
     public double getFitness() { return org.getFitness(); }
 
     public TPActor getActor() {
-        return MLUtil.getHorizActor(program);
+        return program.getActor(TPTrainingParams.getProtagonistID());
     }
 
     public void update() {
@@ -43,6 +42,12 @@ public class TPOrganism {
     public void setDebugMode(boolean val) {
         if (controller != null)
             controller.setDebugMode(val);
+    }
+
+    public void setResetSnapshot() {
+        initActors.clear();
+        for (TPActor a : program)
+            initActors.add(a.copy());
     }
 
     /**
