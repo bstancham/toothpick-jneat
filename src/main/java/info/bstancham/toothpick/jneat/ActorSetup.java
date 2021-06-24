@@ -1,7 +1,7 @@
 package info.bstancham.toothpick.jneat;
 
-import info.bschambers.toothpick.TPProgram;
-import info.bschambers.toothpick.actor.TPActor;
+import info.bstancham.toothpick.TPProgram;
+import info.bstancham.toothpick.actor.TPActor;
 
 /**
  * Setup actors before a training session and then manage them during.

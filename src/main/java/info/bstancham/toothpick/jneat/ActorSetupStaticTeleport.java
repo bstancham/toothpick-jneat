@@ -1,7 +1,7 @@
 package info.bstancham.toothpick.jneat;
 
-import info.bschambers.toothpick.TPProgram;
-import info.bschambers.toothpick.actor.TPActor;
+import info.bstancham.toothpick.TPProgram;
+import info.bstancham.toothpick.actor.TPActor;
 
 /**
  * PROTAGONIST and TARGET both init to random static position, TARGET teleports

@@ -1,7 +1,7 @@
 package info.bstancham.toothpick.jneat;
 
-import info.bschambers.toothpick.*;
-import info.bschambers.toothpick.actor.TPActor;
+import info.bstancham.toothpick.*;
+import info.bstancham.toothpick.actor.TPActor;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 

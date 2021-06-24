@@ -1,12 +1,12 @@
 package info.bstancham.toothpick.jneat;
 
-import info.bschambers.toothpick.PBRandActorSetup;
-import info.bschambers.toothpick.PBMisc;
-import info.bschambers.toothpick.ProgramBehaviour;
-import info.bschambers.toothpick.TPBase;
-import info.bschambers.toothpick.TPGeometry;
-import info.bschambers.toothpick.TPProgram;
-import info.bschambers.toothpick.actor.*;
+import info.bstancham.toothpick.ProgRandActorSetup;
+import info.bstancham.toothpick.ProgMisc;
+import info.bstancham.toothpick.ProgramBehaviour;
+import info.bstancham.toothpick.TPBase;
+import info.bstancham.toothpick.TPGeometry;
+import info.bstancham.toothpick.TPProgram;
+import info.bstancham.toothpick.actor.*;
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
@@ -189,7 +189,7 @@ public abstract class TPTrainingParams {
         a.name = PROTAGONIST_NAME;
         prog.addActor(a);
         // set actor to new random position at beginning of each generation
-        PBMisc centerSetup = new PBMisc((TPProgram tpp) -> {
+        ProgMisc centerSetup = new ProgMisc((TPProgram tpp) -> {
                 TPActor tpa = MLUtil.getHorizActor(tpp);
                 if (tpa != null) {
                     tpa.x = tpp.getGeometry().getXCenter();

@@ -1,8 +1,8 @@
 package info.bstancham.toothpick.jneat;
 
-import info.bschambers.toothpick.actor.TPPlayer;
-import info.bschambers.toothpick.actor.KeyInputHandler;
-import info.bschambers.toothpick.actor.KeyInputThrustInertia;
+import info.bstancham.toothpick.actor.TPPlayer;
+import info.bstancham.toothpick.actor.KeyInputHandler;
+import info.bstancham.toothpick.actor.KeyInputThrustInertia;
 
 /**
  * PROTAGONIST and TARGET both init to random position, TARGET is equipped with a

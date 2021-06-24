@@ -1,6 +1,6 @@
 package info.bstancham.toothpick.jneat;
 
-import info.bschambers.toothpick.actor.TPActor;
+import info.bstancham.toothpick.actor.TPActor;
 
 /**
  * TODO: migrate to ENGINE

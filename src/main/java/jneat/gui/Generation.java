@@ -1,6 +1,6 @@
 package jneat.gui;
 
-import info.bschambers.toothpick.TPGeometry;
+import info.bstancham.toothpick.TPGeometry;
 import info.bstancham.toothpick.jneat.TPTrainingParams;
 import java.awt.*;
 import java.awt.event.*;

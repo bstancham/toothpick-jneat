@@ -1,7 +1,7 @@
 package info.bstancham.toothpick.jneat;
 
-import info.bschambers.toothpick.TPProgram;
-import info.bschambers.toothpick.actor.TPActor;
+import info.bstancham.toothpick.TPProgram;
+import info.bstancham.toothpick.actor.TPActor;
 
 /**
  * Fitness defined as ability to kill the target actor quickly, with modest rewards for

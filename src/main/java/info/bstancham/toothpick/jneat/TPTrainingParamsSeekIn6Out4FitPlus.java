@@ -1,6 +1,6 @@
 package info.bstancham.toothpick.jneat;
 
-import info.bschambers.toothpick.TPBase;
+import info.bstancham.toothpick.TPBase;
 
 public class TPTrainingParamsSeekIn6Out4FitPlus extends TPTrainingParamsSeekIn6Out4 {
 

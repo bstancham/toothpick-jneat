@@ -1,9 +1,9 @@
 package info.bstancham.toothpick.jneat;
 
-import info.bschambers.toothpick.PBRandActorSetup;
-import info.bschambers.toothpick.TPBase;
-import info.bschambers.toothpick.TPProgram;
-import info.bschambers.toothpick.actor.*;
+import info.bstancham.toothpick.ProgRandActorSetup;
+import info.bstancham.toothpick.TPBase;
+import info.bstancham.toothpick.TPProgram;
+import info.bstancham.toothpick.actor.*;
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;

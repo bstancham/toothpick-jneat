@@ -1,8 +1,8 @@
 package info.bstancham.toothpick.jneat;
 
-import info.bschambers.toothpick.TPProgram;
-import info.bschambers.toothpick.actor.*;
-import info.bschambers.toothpick.geom.Line;
+import info.bstancham.toothpick.TPProgram;
+import info.bstancham.toothpick.actor.*;
+import info.bstancham.toothpick.geom.Line;
 import java.util.ArrayList;
 import java.util.List;
 import jneat.neat.NNode;

@@ -1,6 +1,6 @@
 package info.bstancham.toothpick.jneat;
 
-import info.bschambers.toothpick.TPProgram;
+import info.bstancham.toothpick.TPProgram;
 
 /**
  * A neural network input for use with {@link ToothpickTraining}.

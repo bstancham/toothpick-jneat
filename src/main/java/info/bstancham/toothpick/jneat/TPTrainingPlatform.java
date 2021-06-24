@@ -1,6 +1,6 @@
 package info.bstancham.toothpick.jneat;
 
-import info.bschambers.toothpick.*;
+import info.bstancham.toothpick.*;
 import java.util.ArrayList;
 import java.util.List;
 import jneat.gui.MainGui;

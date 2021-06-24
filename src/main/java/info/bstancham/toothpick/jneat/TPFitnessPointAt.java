@@ -1,8 +1,8 @@
 package info.bstancham.toothpick.jneat;
 
-import info.bschambers.toothpick.TPProgram;
-import info.bschambers.toothpick.actor.TPActor;
-import info.bschambers.toothpick.geom.Geom;
+import info.bstancham.toothpick.TPProgram;
+import info.bstancham.toothpick.actor.TPActor;
+import info.bstancham.toothpick.geom.Geom;
 
 /**
  * Fitness defined as accuracy at pointing in the direction of the target actor, averaged

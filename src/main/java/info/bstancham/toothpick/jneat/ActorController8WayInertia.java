@@ -1,6 +1,6 @@
 package info.bstancham.toothpick.jneat;
 
-import info.bschambers.toothpick.actor.TPActor;
+import info.bstancham.toothpick.actor.TPActor;
 
 public class ActorController8WayInertia extends ActorControllerUDLR {
 

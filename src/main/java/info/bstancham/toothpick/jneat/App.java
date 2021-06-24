@@ -1,10 +1,10 @@
 package info.bstancham.toothpick.jneat;
 
-import info.bschambers.toothpick.*;
-import info.bschambers.toothpick.actor.*;
-import info.bschambers.toothpick.geom.Pt;
-import info.bschambers.toothpick.ui.*;
-import info.bschambers.toothpick.ui.swing.TPSwingUI;
+import info.bstancham.toothpick.*;
+import info.bstancham.toothpick.actor.*;
+import info.bstancham.toothpick.geom.Pt;
+import info.bstancham.toothpick.ui.*;
+import info.bstancham.toothpick.ui.swing.TPSwingUI;
 import java.awt.Color;
 import java.io.File;
 import java.util.List;
@@ -58,10 +58,10 @@ public class App {
 
     private TPProgram makeProgNumDrones(int num) {
         TPProgram prog = new TPProgram();
-        PBMaintainDronesNum dronesNum = new PBMaintainDronesNum();
+        ProgMaintainDronesNum dronesNum = new ProgMaintainDronesNum();
         dronesNum.setDronesGoal(num);
         prog.addBehaviour(dronesNum);
-        prog.addBehaviour(new PBToothpickPhysics());
+        prog.addBehaviour(new ProgToothpickPhysics());
         prog.setResetSnapshot();
         return prog;
     }

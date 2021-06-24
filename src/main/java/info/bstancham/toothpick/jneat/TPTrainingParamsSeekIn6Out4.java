@@ -1,6 +1,6 @@
 package info.bstancham.toothpick.jneat;
 
-import info.bschambers.toothpick.TPBase;
+import info.bstancham.toothpick.TPBase;
 
 /**
  * <p>Controller has 4 inputs and 4 outputs:</p>

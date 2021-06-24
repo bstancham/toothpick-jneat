@@ -1,7 +1,7 @@
 package info.bstancham.toothpick.jneat;
 
-import info.bschambers.toothpick.TPProgram;
-import info.bschambers.toothpick.geom.Geom;
+import info.bstancham.toothpick.TPProgram;
+import info.bstancham.toothpick.geom.Geom;
 
 /**
  * PROTAGONIST init to random position. TARGET init to a set distance from PROTAGONIST in

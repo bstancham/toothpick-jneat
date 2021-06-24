@@ -1,8 +1,8 @@
 package info.bstancham.toothpick.jneat;
 
-import info.bschambers.toothpick.*;
-import info.bschambers.toothpick.actor.*;
-import info.bschambers.toothpick.geom.*;
+import info.bstancham.toothpick.*;
+import info.bstancham.toothpick.actor.*;
+import info.bstancham.toothpick.geom.*;
 import java.awt.Color;
 
 public class MLUtil {
@@ -20,7 +20,7 @@ public class MLUtil {
      */
     public static TPProgram makeProgHorizVsVert() {
         TPProgram prog = makeProgHorizVsVertNoCollision();
-        prog.addBehaviour(new PBToothpickPhysics());
+        prog.addBehaviour(new ProgToothpickPhysics());
         prog.setResetSnapshot();
         return prog;
     }
