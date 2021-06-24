@@ -117,24 +117,11 @@ public class MLUtil {
         return prog.getActor(TPTrainingParams.TARGET_NAME);
     }
 
-    /**
-     * Gets the first Line in actor's form, or returns NULL if there is no Line.
-     *
-     * WARNING! may return NULL.
-     */
-    private Line getFirstLine(TPActor a) {
-        TPForm form = a.getForm();
-        if (form.numParts() > 0) {
-            TPPart part = form.getPart(0);
-            if (part instanceof TPLine)
-                return  ((TPLine) part).getLine();
-        }
-        return null;
-    }
-
     public static TPActor makeLineActor(double x1, double y1, double x2, double y2,
                                         double posX, double posY) {
-        TPForm form = new TPForm(new TPPart[] { new TPLine(new Line(x1, y1, x2, y2)) });
+        TPForm form = new TPForm();
+        form.addPart(new TPLink(new Node(x1, y1), new Node(x2, y2)));
+        form.housekeeping();
         TPActor actor = new TPActor(form);
         actor.setBoundaryBehaviour(TPActor.BoundaryBehaviour.WRAP_AT_BOUNDS);
         actor.setPos(new Pt(posX, posY));
